@@ -29,9 +29,11 @@ export default function Chatbot() {
 
     try {
       const res = await axios.post(`${API_BASE_URL}/api/chat/`, { message: input });
-      setMessages(prev => [...prev, { text: res.data.reply, sender: 'ai' }]);
+      const reply = res.data?.reply || "Sorry, I'm having trouble right now. Please try again.";
+      setMessages(prev => [...prev, { text: reply, sender: 'ai' }]);
     } catch (err) {
-      setMessages(prev => [...prev, { text: "Connection error. Is the backend running?", sender: 'ai' }]);
+      const msg = "Sorry, I'm having trouble right now. Please try again.";
+      setMessages(prev => [...prev, { text: msg, sender: 'ai' }]);
     } finally {
       setIsLoading(false);
     }

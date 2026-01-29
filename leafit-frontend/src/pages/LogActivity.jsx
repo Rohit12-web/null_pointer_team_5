@@ -28,6 +28,7 @@ const LogActivity = () => {
     { path: '/log-activity', label: 'Log Activity', icon: '➕' },
     { path: '/impact', label: 'My Impact', icon: '🌍' },
     { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
+    { path: '/badge-store', label: 'Badge Store', icon: '🏪' },
     { path: '/profile', label: 'Profile', icon: '👤' },
   ];
 

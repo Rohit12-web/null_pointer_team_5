@@ -24,6 +24,7 @@ export const ROUTES = {
   LOG_ACTIVITY: '/log-activity',
   IMPACT: '/impact',
   LEADERBOARD: '/leaderboard',
+  BADGE_STORE: '/badge-store',
   PROFILE: '/profile',
 };
 

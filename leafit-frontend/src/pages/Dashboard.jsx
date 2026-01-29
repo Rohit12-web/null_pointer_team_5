@@ -11,6 +11,35 @@ const Dashboard = () => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Eco slideshow data
+  const ecoSlides = [
+    {
+      image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&h=400&fit=crop&q=80',
+      title: 'Plant Trees, Save Earth',
+      description: 'Every tree planted absorbs 22kg of CO₂ annually. Your actions matter!',
+      color: 'from-green-600 to-emerald-600'
+    },
+    {
+      image: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&h=400&fit=crop&q=80',
+      title: 'Recycle for Tomorrow',
+      description: 'Recycling one ton of paper saves 17 trees and 7,000 gallons of water.',
+      color: 'from-blue-600 to-cyan-600'
+    },
+    {
+      image: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=400&fit=crop&q=80',
+      title: 'Clean Energy Future',
+      description: 'Switching to renewable energy reduces carbon footprint by 80%.',
+      color: 'from-yellow-600 to-orange-600'
+    },
+    {
+      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=400&fit=crop&q=80',
+      title: 'Conserve Water',
+      description: 'Small changes like shorter showers save thousands of liters yearly.',
+      color: 'from-cyan-600 to-blue-600'
+    }
+  ];
 
   // Mock data
   const stats = {
@@ -43,6 +72,7 @@ const Dashboard = () => {
     { path: '/log-activity', label: 'Log Activity', icon: '➕' },
     { path: '/impact', label: 'My Impact', icon: '🌍' },
     { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
+    { path: '/badge-store', label: 'Badge Store', icon: '🏪' },
     { path: '/profile', label: 'Profile', icon: '👤' },
   ];
 
@@ -52,6 +82,23 @@ const Dashboard = () => {
       setLoading(false);
     }, 300);
   }, []);
+
+  // Auto-advance slideshow
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % ecoSlides.length);
+    }, 5000); // Change slide every 5 seconds
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % ecoSlides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + ecoSlides.length) % ecoSlides.length);
+  };
 
   const maxValue = Math.max(...weeklyData.map(d => d.value));
 
@@ -206,38 +253,222 @@ const Dashboard = () => {
 
         {/* Dashboard Content */}
         <div className="p-4 lg:p-8">
-          {/* Stats Row */}
+          {/* Eco Slideshow */}
+          <div className="relative overflow-hidden rounded-2xl mb-8 shadow-2xl">
+            <div className="relative h-80 md:h-96">
+              {ecoSlides.map((slide, index) => (
+                <div
+                  key={index}
+                  className={`absolute inset-0 transition-opacity duration-1000 ${
+                    index === currentSlide ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
+                  <img
+                    src={slide.image}
+                    alt={slide.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = `https://via.placeholder.com/800x400/${isDark ? '1f2937' : 'e5e7eb'}/10b981?text=${encodeURIComponent(slide.title)}`;
+                    }}
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-r ${slide.color} opacity-10`}></div>
+                  <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-8">
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+                      {slide.title}
+                    </h2>
+                    <p className="text-xl md:text-2xl text-white/90 max-w-2xl drop-shadow-md">
+                      {slide.description}
+                    </p>
+                    <div className="mt-6 flex gap-4">
+                      <div className="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3">
+                        <p className="text-sm text-white/80">Your Impact</p>
+                        <p className="text-2xl font-bold text-white">{stats.totalPoints.toLocaleString()} pts</p>
+                      </div>
+                      <div className="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3">
+                        <p className="text-sm text-white/80">CO₂ Saved</p>
+                        <p className="text-2xl font-bold text-white">{stats.co2Saved} kg</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Slideshow Controls */}
+            <button
+              onClick={prevSlide}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-3 rounded-full transition-all"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-3 rounded-full transition-all"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            {/* Slide Indicators */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {ecoSlides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`w-3 h-3 rounded-full transition-all ${
+                    index === currentSlide ? 'bg-white w-8' : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Highlighted Eco Tip */}
+          <div className="relative overflow-hidden rounded-xl mb-8 border-4 border-emerald-400 shadow-2xl">
+            <img
+              src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=200&fit=crop"
+              alt="Nature"
+              className="w-full h-32 object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/10 to-teal-600/10 flex items-center p-6">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl">
+                  💡
+                </div>
+                <div>
+                  <h3 className="text-white text-lg font-bold mb-1">Eco Tip of the Day</h3>
+                  <p className="text-emerald-100 text-sm">Switching to reusable bags can save up to 500 plastic bags per year!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Row - Simplified without background images */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-5 ${colors.borderHover} transition-all ${isDark ? '' : 'shadow-sm'}`}>
+            <div className={`bg-gradient-to-br ${isDark ? 'from-gray-800 to-gray-700' : 'from-gray-100 to-white'} rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
               <div className="flex items-center justify-between mb-3">
-                <span className={`${colors.text.secondary} text-sm`}>Total Points</span>
-                <span className="text-emerald-500 text-xs">+12%</span>
+                <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Total Points</span>
+                <span className="text-2xl">🏆</span>
               </div>
-              <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">{stats.totalPoints.toLocaleString()}</div>
+              <div className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stats.totalPoints.toLocaleString()}</div>
+              <div className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>+12% this week</div>
             </div>
             
-            <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-5 ${colors.borderHover} transition-all ${isDark ? '' : 'shadow-sm'}`}>
+            <div className={`bg-gradient-to-br ${isDark ? 'from-gray-800 to-gray-700' : 'from-gray-100 to-white'} rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
               <div className="flex items-center justify-between mb-3">
-                <span className={`${colors.text.secondary} text-sm`}>CO₂ Saved</span>
-                <span className="text-emerald-500 text-xs">+8%</span>
+                <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>CO₂ Saved</span>
+                <span className="text-2xl">🌍</span>
               </div>
-              <div className={`text-2xl font-bold ${colors.text.primary}`}>{stats.co2Saved} <span className={`text-sm ${colors.text.secondary} font-normal`}>kg</span></div>
+              <div className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stats.co2Saved} <span className="text-lg font-normal">kg</span></div>
+              <div className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>+8% this week</div>
             </div>
             
-            <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-5 hover:border-orange-500/50 transition-all ${isDark ? '' : 'shadow-sm'}`}>
+            <div className={`bg-gradient-to-br ${isDark ? 'from-gray-800 to-gray-700' : 'from-gray-100 to-white'} rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
               <div className="flex items-center justify-between mb-3">
-                <span className={`${colors.text.secondary} text-sm`}>Current Streak</span>
-                <span className="text-orange-400">🔥</span>
+                <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Current Streak</span>
+                <span className="text-2xl">🔥</span>
               </div>
-              <div className={`text-2xl font-bold ${colors.text.primary}`}>{stats.streak} <span className={`text-sm ${colors.text.secondary} font-normal`}>days</span></div>
+              <div className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stats.streak} <span className="text-lg font-normal">days</span></div>
+              <div className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Keep it up!</div>
             </div>
             
-            <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-5 hover:border-yellow-500/50 transition-all ${isDark ? '' : 'shadow-sm'}`}>
+            <div className={`bg-gradient-to-br ${isDark ? 'from-gray-800 to-gray-700' : 'from-gray-100 to-white'} rounded-xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
               <div className="flex items-center justify-between mb-3">
-                <span className={`${colors.text.secondary} text-sm`}>Global Rank</span>
-                <span className="text-yellow-400">🏆</span>
+                <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Global Rank</span>
+                <span className="text-2xl">⭐</span>
               </div>
-              <div className={`text-2xl font-bold ${colors.text.primary}`}>#{stats.rank}</div>
+              <div className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>#{stats.rank}</div>
+              <div className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Top 5% globally</div>
+            </div>
+          </div>
+
+          {/* Environmental Impact Visualization - Improved */}
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className={`bg-gradient-to-br ${isDark ? 'from-emerald-900/50 to-green-900/50' : 'from-emerald-50 to-green-50'} border-2 ${isDark ? 'border-emerald-700' : 'border-emerald-300'} rounded-xl p-6 hover:shadow-lg transition-all`}>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-3xl shadow-lg">
+                  🌳
+                </div>
+                <div>
+                  <h3 className={`text-lg font-semibold ${colors.text.primary}`}>Trees Planted</h3>
+                  <p className={`text-sm ${colors.text.secondary}`}>Equivalent impact</p>
+                </div>
+              </div>
+              <p className="text-4xl font-bold text-emerald-600">{(stats.co2Saved / 22).toFixed(1)}</p>
+              <p className={`text-sm ${colors.text.secondary} mt-2`}>Your CO₂ savings equal planting this many trees annually</p>
+            </div>
+
+            <div className={`bg-gradient-to-br ${isDark ? 'from-cyan-900/50 to-blue-900/50' : 'from-cyan-50 to-blue-50'} border-2 ${isDark ? 'border-cyan-700' : 'border-cyan-300'} rounded-xl p-6 hover:shadow-lg transition-all`}>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-3xl shadow-lg">
+                  💧
+                </div>
+                <div>
+                  <h3 className={`text-lg font-semibold ${colors.text.primary}`}>Water Saved</h3>
+                  <p className={`text-sm ${colors.text.secondary}`}>Conservation effort</p>
+                </div>
+              </div>
+              <p className="text-4xl font-bold text-cyan-600">1,250L</p>
+              <p className={`text-sm ${colors.text.secondary} mt-2`}>Enough to fill 8 bathtubs!</p>
+            </div>
+
+            <div className={`bg-gradient-to-br ${isDark ? 'from-green-900/50 to-teal-900/50' : 'from-green-50 to-teal-50'} border-2 ${isDark ? 'border-green-700' : 'border-green-300'} rounded-xl p-6 hover:shadow-lg transition-all`}>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-3xl shadow-lg">
+                  ♻️
+                </div>
+                <div>
+                  <h3 className={`text-lg font-semibold ${colors.text.primary}`}>Waste Reduced</h3>
+                  <p className={`text-sm ${colors.text.secondary}`}>Recycling impact</p>
+                </div>
+              </div>
+              <p className="text-4xl font-bold text-green-600">45.2kg</p>
+              <p className={`text-sm ${colors.text.secondary} mt-2`}>Diverted from landfills</p>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-6 ${isDark ? '' : 'shadow-sm'} mb-8`}>
+            <h2 className={`text-base font-semibold ${colors.text.primary} mb-4`}>Quick Actions</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                {
+                  icon: '🚌',
+                  label: 'Transport',
+                  path: '/log-activity?type=transport',
+                  color: 'border-blue-300 bg-blue-50 hover:bg-blue-100'
+                },
+                {
+                  icon: '💡',
+                  label: 'Energy',
+                  path: '/log-activity?type=electricity',
+                  color: 'border-amber-300 bg-amber-50 hover:bg-amber-100'
+                },
+                {
+                  icon: '♻️',
+                  label: 'Recycling',
+                  path: '/log-activity?type=recycling',
+                  color: 'border-emerald-300 bg-emerald-50 hover:bg-emerald-100'
+                },
+                {
+                  icon: '💧',
+                  label: 'Water',
+                  path: '/log-activity?type=water',
+                  color: 'border-cyan-300 bg-cyan-50 hover:bg-cyan-100'
+                },
+              ].map((action, i) => (
+                <Link
+                  key={i}
+                  to={action.path}
+                  className={`flex flex-col items-center gap-2 p-4 border rounded-lg transition-colors ${action.color} ${isDark ? 'border-gray-600 bg-gray-800 hover:bg-gray-700' : ''}`}
+                >
+                  <span className="text-2xl">{action.icon}</span>
+                  <span className={`text-sm font-medium ${colors.text.primary}`}>{action.label}</span>
+                </Link>
+              ))}
             </div>
           </div>
 
@@ -245,7 +476,7 @@ const Dashboard = () => {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Left Column - Charts */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Weekly Chart */}
+              {/* Weekly Chart - Pie Chart */}
               <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-6 ${isDark ? '' : 'shadow-sm'}`}>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className={`text-base font-semibold ${colors.text.primary}`}>Weekly Overview</h2>
@@ -254,42 +485,41 @@ const Dashboard = () => {
                     <option>Last Week</option>
                   </select>
                 </div>
-                
-                <div className="flex items-end justify-between h-40 gap-3">
-                  {weeklyData.map((day, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                      <div className={`text-xs ${colors.text.secondary} mb-1`}>{day.activities}</div>
-                      <div 
-                        className="w-full bg-gradient-to-t from-emerald-600 to-teal-500 rounded-md hover:from-emerald-500 hover:to-teal-400 transition-all cursor-pointer shadow-lg shadow-emerald-900/20"
-                        style={{ height: `${(day.value / maxValue) * 100}%`, minHeight: '8px' }}
-                      />
-                      <span className={`text-xs ${colors.text.secondary}`}>{day.day}</span>
+
+                <div className="flex flex-col items-center">
+                  {/* Simple Bar Chart */}
+                  <div className="w-full mb-6">
+                    <div className="flex items-end justify-between h-32 gap-2">
+                      {weeklyData.map((day, i) => (
+                        <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                          <div className={`text-xs ${colors.text.secondary} mb-1`}>{day.activities}</div>
+                          <div
+                            className="w-full bg-gradient-to-t from-emerald-500 to-teal-500 rounded-md hover:from-emerald-400 hover:to-teal-400 transition-all cursor-pointer shadow-lg shadow-emerald-900/20"
+                            style={{ height: `${(day.value / Math.max(...weeklyData.map(d => d.value))) * 100}%`, minHeight: '8px' }}
+                          />
+                          <span className={`text-xs ${colors.text.secondary}`}>{day.day}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Legend */}
+                  <div className="grid grid-cols-2 gap-4 w-full">
+                    {weeklyData.map((day, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 shadow-sm" />
+                        <div className="flex-1">
+                          <span className={`text-sm font-medium ${colors.text.primary}`}>{day.day}</span>
+                          <span className={`text-xs ${colors.text.secondary} block`}>{day.activities} activities</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Quick Actions */}
-              <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-6 ${isDark ? '' : 'shadow-sm'}`}>
-                <h2 className={`text-base font-semibold ${colors.text.primary} mb-4`}>Quick Actions</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {[
-                    { icon: '🚌', label: 'Transport', path: '/log-activity?type=transport', hoverColor: 'hover:border-blue-500/50 hover:shadow-blue-900/20' },
-                    { icon: '💡', label: 'Energy', path: '/log-activity?type=electricity', hoverColor: 'hover:border-yellow-500/50 hover:shadow-yellow-900/20' },
-                    { icon: '♻️', label: 'Recycling', path: '/log-activity?type=recycling', hoverColor: 'hover:border-green-500/50 hover:shadow-green-900/20' },
-                    { icon: '💧', label: 'Water', path: '/log-activity?type=water', hoverColor: 'hover:border-cyan-500/50 hover:shadow-cyan-900/20' },
-                  ].map((action, i) => (
-                    <Link
-                      key={i}
-                      to={action.path}
-                      className={`flex flex-col items-center gap-2 p-4 ${isDark ? 'bg-[#162019]' : 'bg-white'} border ${isDark ? 'border-emerald-800/30' : 'border-emerald-200'} rounded-xl transition-all hover:shadow-lg ${action.hoverColor}`}
-                    >
-                      <span className="text-2xl">{action.icon}</span>
-                      <span className={`text-xs ${colors.text.secondary}`}>{action.label}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
+              {/* Quick Actions - Improved */}
+                
             </div>
 
             {/* Right Column */}
@@ -344,23 +574,34 @@ const Dashboard = () => {
                 <p className="text-xs text-emerald-100">2 more activities to reach your goal</p>
               </div>
 
-              {/* Achievements */}
+              {/* Achievements with Visual Showcase */}
               <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-6 ${isDark ? '' : 'shadow-sm'}`}>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className={`text-base font-semibold ${colors.text.primary}`}>Badges</h2>
+                  <h2 className={`text-base font-semibold ${colors.text.primary}`}>Recent Achievements</h2>
                   <Link to="/profile" className="text-xs text-emerald-500 hover:text-emerald-400">View all</Link>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {['🌱', '🔥', '♻️', '💧', '🚴'].map((badge, i) => (
-                    <div key={i} className={`w-10 h-10 ${isDark ? 'bg-[#162019]' : 'bg-emerald-100'} border ${isDark ? 'border-emerald-800/30' : 'border-emerald-200'} rounded-lg flex items-center justify-center text-lg hover:border-emerald-500/50 transition-colors`}>
-                      {badge}
+                <div className="space-y-3">
+                  {[
+                    { icon: '🌱', title: 'First Steps', desc: 'Logged first activity', image: 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=80&h=80&fit=crop' },
+                    { icon: '🔥', title: 'Week Warrior', desc: '7-day streak achieved', image: 'https://images.unsplash.com/photo-1525498128493-380d1990a112?w=80&h=80&fit=crop' },
+                    { icon: '♻️', title: 'Recycler', desc: 'Recycled 50 items', image: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=80&h=80&fit=crop' },
+                  ].map((achievement, i) => (
+                    <div key={i} className={`flex items-center gap-3 p-3 ${isDark ? 'bg-[#162019]' : 'bg-emerald-50'} rounded-lg border ${isDark ? 'border-emerald-800/30' : 'border-emerald-200'} hover:border-emerald-500/50 transition-colors`}>
+                      <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                        <img src={achievement.image} alt={achievement.title} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-medium ${colors.text.primary} text-sm`}>{achievement.title}</p>
+                        <p className={`text-xs ${colors.text.secondary}`}>{achievement.desc}</p>
+                      </div>
+                      <span className="text-2xl">{achievement.icon}</span>
                     </div>
                   ))}
-                  <div className={`w-10 h-10 ${isDark ? 'bg-[#0d1210]' : 'bg-emerald-50'} border border-dashed ${isDark ? 'border-emerald-800/30' : 'border-emerald-300'} rounded-lg flex items-center justify-center text-xs ${colors.text.secondary}`}>
-                    +3
-                  </div>
                 </div>
               </div>
+
+              {/* Motivational Eco Tip */}
+              
             </div>
           </div>
         </div>

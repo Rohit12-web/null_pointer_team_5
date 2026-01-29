@@ -28,6 +28,11 @@ const Sidebar = () => {
       icon: '🏆',
     },
     {
+      path: '/badge-store',
+      name: 'Badge Store',
+      icon: '🏪',
+    },
+    {
       path: '/profile',
       name: 'Profile',
       icon: '👤',

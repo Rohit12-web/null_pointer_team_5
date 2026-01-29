@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Chart from '../components/Chart';
-import ActivityCard from '../components/ActivityCard';
-import ImpactCard from '../components/ImpactCard';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -90,15 +88,39 @@ const Dashboard = () => {
     { icon: '💧', label: 'Save Water', path: '/log-activity?type=water' },
   ];
 
+  const getActivityIcon = (type) => {
+    const icons = {
+      transport: '🚌',
+      electricity: '💡',
+      recycling: '♻️',
+      water: '💧',
+    };
+    return icons[type] || '🌱';
+  };
+
+  const getRelativeTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    return date.toLocaleDateString();
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-neutral-950 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
         {/* Welcome Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">
+          <p className="text-emerald-400 text-sm tracking-widest uppercase mb-2">Dashboard</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-white">
             Welcome back, {user?.name || 'Eco Warrior'}! 🌿
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-neutral-400 mt-2">
             Track your impact and keep making a difference.
           </p>
         </div>
@@ -109,52 +131,59 @@ const Dashboard = () => {
             <Link
               key={index}
               to={action.path}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all flex items-center space-x-3 group"
+              className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 hover:border-emerald-500/50 transition-all duration-300 flex items-center space-x-3 group"
             >
               <span className="text-3xl group-hover:scale-110 transition-transform">
                 {action.icon}
               </span>
-              <span className="font-medium text-gray-700">{action.label}</span>
+              <span className="font-medium text-neutral-300 group-hover:text-emerald-400 transition-colors">
+                {action.label}
+              </span>
             </Link>
           ))}
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <ImpactCard
-            title="Total Points"
-            value={mockStats.totalPoints}
-            unit="pts"
-            icon="🌱"
-            color="green"
-            trend="up"
-            trendValue="+125 this week"
-          />
-          <ImpactCard
-            title="CO₂ Saved"
-            value={mockStats.totalCO2Saved}
-            unit="kg"
-            icon="🌍"
-            color="blue"
-            trend="up"
-            trendValue="+12.5 kg this week"
-          />
-          <ImpactCard
-            title="Current Streak"
-            value={mockStats.currentStreak}
-            unit="days"
-            icon="🔥"
-            color="orange"
-            description="Keep it going!"
-          />
-          <ImpactCard
-            title="Global Rank"
-            value={`#${mockStats.rank}`}
-            icon="🏆"
-            color="purple"
-            trend="up"
-            trendValue="Up 5 places"
-          />
+          {/* Total Points */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-emerald-500/30 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-3xl">🌱</span>
+              <span className="text-emerald-400 text-sm font-medium">+125 this week</span>
+            </div>
+            <div className="text-3xl font-bold text-emerald-500">{mockStats.totalPoints}</div>
+            <div className="text-neutral-500 text-sm mt-1">Total Points</div>
+          </div>
+
+          {/* CO2 Saved */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-blue-500/30 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-3xl">🌍</span>
+              <span className="text-blue-400 text-sm font-medium">+12.5 kg this week</span>
+            </div>
+            <div className="text-3xl font-bold text-blue-500">{mockStats.totalCO2Saved} <span className="text-lg text-neutral-500">kg</span></div>
+            <div className="text-neutral-500 text-sm mt-1">CO₂ Saved</div>
+          </div>
+
+          {/* Current Streak */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-orange-500/30 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-3xl">🔥</span>
+              <span className="text-orange-400 text-sm font-medium">Keep it going!</span>
+            </div>
+            <div className="text-3xl font-bold text-orange-500">{mockStats.currentStreak} <span className="text-lg text-neutral-500">days</span></div>
+            <div className="text-neutral-500 text-sm mt-1">Current Streak</div>
+          </div>
+
+          {/* Global Rank */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-purple-500/30 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-3xl">🏆</span>
+              <span className="text-purple-400 text-sm font-medium">Up 5 places</span>
+            </div>
+            <div className="text-3xl font-bold text-purple-500">#{mockStats.rank}</div>
+            <div className="text-neutral-500 text-sm mt-1">Global Rank</div>
+          </div>
         </div>
 
         {/* Main Content Grid */}
@@ -162,39 +191,53 @@ const Dashboard = () => {
           {/* Charts Section */}
           <div className="lg:col-span-2 space-y-6">
             {/* Weekly Activity Chart */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-800">Weekly Activity</h2>
-                <select className="text-sm border rounded-lg px-3 py-1.5 text-gray-600">
+                <h2 className="text-xl font-semibold text-white">Weekly Activity</h2>
+                <select className="text-sm bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-1.5 text-neutral-300 focus:outline-none focus:border-emerald-500">
                   <option>This Week</option>
                   <option>Last Week</option>
                   <option>This Month</option>
                 </select>
               </div>
-              <Chart type="bar" data={weeklyData} height={200} />
+              
+              {/* Simple Bar Chart */}
+              <div className="flex items-end justify-between h-48 gap-2">
+                {weeklyData.map((day, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                    <div 
+                      className="w-full bg-emerald-500/20 rounded-t-lg relative overflow-hidden group cursor-pointer"
+                      style={{ height: `${(day.value / 70) * 100}%` }}
+                    >
+                      <div 
+                        className="absolute bottom-0 w-full bg-emerald-500 rounded-t-lg transition-all group-hover:bg-emerald-400"
+                        style={{ height: '100%' }}
+                      />
+                    </div>
+                    <span className="text-xs text-neutral-500">{day.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Impact by Category */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">Impact by Category</h2>
-              <div className="flex flex-col md:flex-row items-center gap-8">
-                <div className="w-48">
-                  <Chart type="donut" data={categoryData} size={180} />
-                </div>
-                <div className="flex-1 space-y-3">
-                  {categoryData.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <span className="text-gray-700">{item.label}</span>
-                      </div>
-                      <span className="font-medium text-gray-800">{item.value}%</span>
+            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+              <h2 className="text-xl font-semibold text-white mb-6">Impact by Category</h2>
+              <div className="space-y-4">
+                {categoryData.map((item, index) => (
+                  <div key={index}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-neutral-300">{item.label}</span>
+                      <span className="font-medium text-white">{item.value}%</span>
                     </div>
-                  ))}
-                </div>
+                    <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${item.value}%`, backgroundColor: item.color }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -202,10 +245,10 @@ const Dashboard = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Recent Activities */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">Recent Activities</h2>
-                <Link to="/impact" className="text-green-600 hover:text-green-700 text-sm font-medium">
+                <h2 className="text-xl font-semibold text-white">Recent Activities</h2>
+                <Link to="/impact" className="text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors">
                   View All →
                 </Link>
               </div>
@@ -214,10 +257,10 @@ const Dashboard = () => {
                 <div className="space-y-4">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="animate-pulse flex space-x-3">
-                      <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                      <div className="w-10 h-10 bg-neutral-800 rounded-full"></div>
                       <div className="flex-1 space-y-2">
-                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                        <div className="h-4 bg-neutral-800 rounded w-3/4"></div>
+                        <div className="h-3 bg-neutral-800 rounded w-1/2"></div>
                       </div>
                     </div>
                   ))}
@@ -225,17 +268,32 @@ const Dashboard = () => {
               ) : (
                 <div className="space-y-4">
                   {activities.slice(0, 4).map((activity) => (
-                    <ActivityCard key={activity.id} activity={activity} showActions={false} />
+                    <div 
+                      key={activity.id}
+                      className="flex items-start space-x-3 p-3 rounded-lg bg-neutral-800/50 hover:bg-neutral-800 transition-colors"
+                    >
+                      <span className="text-2xl">{getActivityIcon(activity.type)}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-neutral-200 truncate">
+                          {activity.description}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-emerald-400">+{activity.points} pts</span>
+                          <span className="text-xs text-neutral-500">•</span>
+                          <span className="text-xs text-neutral-500">{getRelativeTime(activity.createdAt)}</span>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
             </div>
 
             {/* Achievements Preview */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">Achievements</h2>
-                <Link to="/profile" className="text-green-600 hover:text-green-700 text-sm font-medium">
+                <h2 className="text-xl font-semibold text-white">Achievements</h2>
+                <Link to="/profile" className="text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors">
                   View All →
                 </Link>
               </div>
@@ -243,8 +301,10 @@ const Dashboard = () => {
                 {['🌱', '🔥', '♻️', '💧', '🚴', '🌳', '⚡', '🏆'].map((badge, index) => (
                   <div
                     key={index}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-xl ${
-                      index < 5 ? 'bg-green-100' : 'bg-gray-100 opacity-50'
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all ${
+                      index < 5 
+                        ? 'bg-emerald-500/20 hover:bg-emerald-500/30 cursor-pointer' 
+                        : 'bg-neutral-800 opacity-40'
                     }`}
                     title={index < 5 ? 'Earned' : 'Locked'}
                   >
@@ -252,24 +312,47 @@ const Dashboard = () => {
                   </div>
                 ))}
               </div>
-              <p className="text-sm text-gray-500 mt-4 text-center">5 of 8 badges earned</p>
+              <p className="text-sm text-neutral-500 mt-4 text-center">5 of 8 badges earned</p>
             </div>
 
             {/* Daily Goal */}
-            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-sm p-6 text-white">
+            <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl p-6 text-white">
               <h2 className="text-lg font-semibold mb-4">Daily Goal</h2>
               <div className="mb-4">
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Progress</span>
-                  <span>3/5 activities</span>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-emerald-100">Progress</span>
+                  <span className="font-medium">3/5 activities</span>
                 </div>
-                <div className="w-full h-3 bg-white/30 rounded-full overflow-hidden">
-                  <div className="h-full bg-white rounded-full" style={{ width: '60%' }}></div>
+                <div className="w-full h-3 bg-white/20 rounded-full overflow-hidden">
+                  <div className="h-full bg-white rounded-full transition-all" style={{ width: '60%' }}></div>
                 </div>
               </div>
-              <p className="text-green-100 text-sm">
+              <p className="text-emerald-100 text-sm">
                 Complete 2 more activities to reach your daily goal! 💪
               </p>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+              <h2 className="text-lg font-semibold text-white mb-4">This Week</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-3 bg-neutral-800/50 rounded-lg">
+                  <div className="text-2xl font-bold text-emerald-500">{mockStats.activitiesThisWeek}</div>
+                  <div className="text-xs text-neutral-500 mt-1">Activities</div>
+                </div>
+                <div className="text-center p-3 bg-neutral-800/50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-500">{mockStats.totalEnergySaved.toFixed(0)}</div>
+                  <div className="text-xs text-neutral-500 mt-1">kWh Saved</div>
+                </div>
+                <div className="text-center p-3 bg-neutral-800/50 rounded-lg">
+                  <div className="text-2xl font-bold text-cyan-500">{mockStats.totalWaterSaved}</div>
+                  <div className="text-xs text-neutral-500 mt-1">L Water</div>
+                </div>
+                <div className="text-center p-3 bg-neutral-800/50 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-500">{mockStats.totalWasteReduced.toFixed(0)}</div>
+                  <div className="text-xs text-neutral-500 mt-1">kg Waste</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

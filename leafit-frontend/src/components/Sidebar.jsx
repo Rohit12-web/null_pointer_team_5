@@ -37,26 +37,34 @@ const Sidebar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 bg-white shadow-lg min-h-screen">
+    <aside className="hidden lg:flex flex-col w-64 bg-neutral-900 border-r border-neutral-800 min-h-screen">
+      {/* Logo */}
+      <div className="p-6 border-b border-neutral-800">
+        <Link to="/" className="flex items-center space-x-2">
+          <span className="text-3xl">🌿</span>
+          <span className="text-xl font-bold text-emerald-500">LeafIt</span>
+        </Link>
+      </div>
+
       {/* User Info */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-6 border-b border-neutral-800">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-xl font-bold">
+          <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
+            <span className="text-black text-xl font-bold">
               {user?.name?.charAt(0).toUpperCase() || 'U'}
             </span>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-800">{user?.name || 'User'}</h3>
-            <p className="text-sm text-gray-500">Eco Warrior</p>
+            <h3 className="font-semibold text-white">{user?.name || 'User'}</h3>
+            <p className="text-sm text-neutral-400">Eco Warrior</p>
           </div>
         </div>
         
         {/* Points Display */}
-        <div className="mt-4 bg-green-50 rounded-lg p-3">
+        <div className="mt-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Total Points</span>
-            <span className="text-lg font-bold text-green-600">
+            <span className="text-sm text-neutral-400">Total Points</span>
+            <span className="text-lg font-bold text-emerald-400">
               {user?.totalPoints || 0} 🌱
             </span>
           </div>
@@ -72,8 +80,8 @@ const Sidebar = () => {
                 to={item.path}
                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                   isActive(item.path)
-                    ? 'bg-green-500 text-white shadow-md'
-                    : 'text-gray-700 hover:bg-green-50 hover:text-green-600'
+                    ? 'bg-emerald-500 text-black'
+                    : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
                 }`}
               >
                 <span className="text-xl">{item.icon}</span>
@@ -85,24 +93,24 @@ const Sidebar = () => {
       </nav>
 
       {/* Quick Stats */}
-      <div className="p-4 border-t border-gray-200">
-        <h4 className="text-sm font-semibold text-gray-500 mb-3">Quick Stats</h4>
+      <div className="p-4 border-t border-neutral-800">
+        <h4 className="text-sm font-semibold text-neutral-500 mb-3">Quick Stats</h4>
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">CO₂ Saved</span>
-            <span className="font-medium text-green-600">
+            <span className="text-neutral-400">CO₂ Saved</span>
+            <span className="font-medium text-emerald-400">
               {user?.totalCO2Saved?.toFixed(1) || 0} kg
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Activities</span>
-            <span className="font-medium text-green-600">
+            <span className="text-neutral-400">Activities</span>
+            <span className="font-medium text-emerald-400">
               {user?.activitiesCount || 0}
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Badges</span>
-            <span className="font-medium text-green-600">
+            <span className="text-neutral-400">Badges</span>
+            <span className="font-medium text-emerald-400">
               {user?.badges?.length || 0}
             </span>
           </div>
@@ -110,9 +118,9 @@ const Sidebar = () => {
       </div>
 
       {/* Eco Tip */}
-      <div className="p-4 m-4 bg-green-50 rounded-lg">
-        <p className="text-xs text-gray-500 mb-1">💡 Eco Tip</p>
-        <p className="text-sm text-gray-700">
+      <div className="p-4 m-4 bg-neutral-800 border border-neutral-700 rounded-lg">
+        <p className="text-xs text-neutral-500 mb-1">💡 Eco Tip</p>
+        <p className="text-sm text-neutral-300">
           Switching to LED bulbs can save up to 75% energy compared to traditional bulbs!
         </p>
       </div>

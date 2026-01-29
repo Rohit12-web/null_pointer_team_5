@@ -36,22 +36,28 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen bg-neutral-950 flex items-center justify-center py-12 px-4 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-emerald-600/10 rounded-full blur-[80px]" />
+      </div>
+
+      <div className="max-w-md w-full relative z-10">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2">
             <span className="text-5xl">🌿</span>
-            <span className="text-3xl font-bold text-green-600">LeafIt</span>
+            <span className="text-3xl font-bold text-emerald-500">LeafIt</span>
           </Link>
-          <h2 className="mt-4 text-2xl font-bold text-gray-800">Welcome Back!</h2>
-          <p className="text-gray-600 mt-1">Sign in to continue your green journey</p>
+          <h2 className="mt-4 text-2xl font-bold text-white">Welcome Back!</h2>
+          <p className="text-neutral-400 mt-1">Sign in to continue your green journey</p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-8">
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+            <div className="mb-6 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-sm">
               {error}
             </div>
           )}
@@ -59,14 +65,14 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-neutral-300 mb-2">
                 Email Address
               </label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                 placeholder="you@example.com"
                 required
               />
@@ -74,14 +80,14 @@ const Login = () => {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-neutral-300 mb-2">
                 Password
               </label>
               <input
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                 placeholder="••••••••"
                 required
               />
@@ -92,11 +98,11 @@ const Login = () => {
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  className="w-4 h-4 bg-neutral-800 border-neutral-600 rounded text-emerald-500 focus:ring-emerald-500"
                 />
-                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                <span className="ml-2 text-sm text-neutral-400">Remember me</span>
               </label>
-              <Link to="/forgot-password" className="text-sm text-green-600 hover:text-green-700">
+              <Link to="/forgot-password" className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors">
                 Forgot password?
               </Link>
             </div>
@@ -107,8 +113,8 @@ const Login = () => {
               disabled={isLoading}
               className={`w-full py-3 rounded-xl font-semibold text-lg transition-all ${
                 isLoading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-green-500 hover:bg-green-600 text-white transform hover:scale-[1.02]'
+                  ? 'bg-neutral-700 cursor-not-allowed text-neutral-400'
+                  : 'bg-emerald-500 hover:bg-emerald-400 text-black transform hover:scale-[1.02]'
               }`}
             >
               {isLoading ? (
@@ -127,27 +133,27 @@ const Login = () => {
 
           {/* Divider */}
           <div className="my-6 flex items-center">
-            <div className="flex-1 border-t border-gray-200"></div>
-            <span className="px-4 text-sm text-gray-500">or continue with</span>
-            <div className="flex-1 border-t border-gray-200"></div>
+            <div className="flex-1 border-t border-neutral-700"></div>
+            <span className="px-4 text-sm text-neutral-500">or continue with</span>
+            <div className="flex-1 border-t border-neutral-700"></div>
           </div>
 
           {/* Social Login */}
           <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center space-x-2 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+            <button className="flex items-center justify-center space-x-2 py-3 bg-neutral-800 border border-neutral-700 rounded-xl hover:border-neutral-600 hover:bg-neutral-700 transition-all">
               <span className="text-xl">🔵</span>
-              <span className="font-medium text-gray-700">Google</span>
+              <span className="font-medium text-neutral-300">Google</span>
             </button>
-            <button className="flex items-center justify-center space-x-2 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+            <button className="flex items-center justify-center space-x-2 py-3 bg-neutral-800 border border-neutral-700 rounded-xl hover:border-neutral-600 hover:bg-neutral-700 transition-all">
               <span className="text-xl">⚫</span>
-              <span className="font-medium text-gray-700">GitHub</span>
+              <span className="font-medium text-neutral-300">GitHub</span>
             </button>
           </div>
 
           {/* Sign Up Link */}
-          <p className="mt-8 text-center text-gray-600">
+          <p className="mt-8 text-center text-neutral-400">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-green-600 hover:text-green-700 font-medium">
+            <Link to="/signup" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
               Sign up for free
             </Link>
           </p>
@@ -155,7 +161,7 @@ const Login = () => {
 
         {/* Back to Home */}
         <p className="mt-6 text-center">
-          <Link to="/" className="text-gray-500 hover:text-gray-700 text-sm">
+          <Link to="/" className="text-neutral-500 hover:text-neutral-300 text-sm transition-colors">
             ← Back to Home
           </Link>
         </p>

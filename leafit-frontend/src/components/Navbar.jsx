@@ -13,13 +13,13 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-green-600 shadow-lg sticky top-0 z-50">
+    <nav className="bg-neutral-900 border-b border-neutral-800 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <span className="text-3xl">🌿</span>
-            <span className="text-white text-2xl font-bold">LeafIt</span>
+            <span className="text-emerald-500 text-2xl font-bold">LeafIt</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -28,35 +28,35 @@ const Navbar = () => {
               <>
                 <Link
                   to="/dashboard"
-                  className="text-white hover:text-green-200 transition-colors font-medium"
+                  className="text-neutral-300 hover:text-emerald-400 transition-colors font-medium"
                 >
                   Dashboard
                 </Link>
                 <Link
                   to="/log-activity"
-                  className="text-white hover:text-green-200 transition-colors font-medium"
+                  className="text-neutral-300 hover:text-emerald-400 transition-colors font-medium"
                 >
                   Log Activity
                 </Link>
                 <Link
                   to="/impact"
-                  className="text-white hover:text-green-200 transition-colors font-medium"
+                  className="text-neutral-300 hover:text-emerald-400 transition-colors font-medium"
                 >
                   My Impact
                 </Link>
                 <Link
                   to="/leaderboard"
-                  className="text-white hover:text-green-200 transition-colors font-medium"
+                  className="text-neutral-300 hover:text-emerald-400 transition-colors font-medium"
                 >
                   Leaderboard
                 </Link>
                 <div className="flex items-center space-x-4">
                   <Link
                     to="/profile"
-                    className="flex items-center space-x-2 text-white hover:text-green-200"
+                    className="flex items-center space-x-2 text-neutral-300 hover:text-emerald-400"
                   >
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-bold">
+                    <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-bold text-black">
                         {user?.name?.charAt(0).toUpperCase() || 'U'}
                       </span>
                     </div>
@@ -64,7 +64,7 @@ const Navbar = () => {
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg transition-colors border border-red-500/30"
                   >
                     Logout
                   </button>
@@ -74,13 +74,13 @@ const Navbar = () => {
               <>
                 <Link
                   to="/login"
-                  className="text-white hover:text-green-200 transition-colors font-medium"
+                  className="text-neutral-300 hover:text-emerald-400 transition-colors font-medium"
                 >
                   Login
                 </Link>
                 <Link
                   to="/signup"
-                  className="bg-white text-green-600 hover:bg-green-100 px-4 py-2 rounded-lg font-medium transition-colors"
+                  className="bg-emerald-500 text-black hover:bg-emerald-400 px-4 py-2 rounded-lg font-medium transition-colors"
                 >
                   Sign Up
                 </Link>
@@ -91,7 +91,7 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden text-white focus:outline-none"
+            className="md:hidden text-neutral-300 focus:outline-none"
           >
             <svg
               className="w-6 h-6"
@@ -120,47 +120,47 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden pb-4">
+          <div className="md:hidden pb-4 border-t border-neutral-800 mt-2 pt-4">
             {isAuthenticated ? (
               <div className="flex flex-col space-y-3">
                 <Link
                   to="/dashboard"
-                  className="text-white hover:text-green-200 py-2"
+                  className="text-neutral-300 hover:text-emerald-400 py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Dashboard
                 </Link>
                 <Link
                   to="/log-activity"
-                  className="text-white hover:text-green-200 py-2"
+                  className="text-neutral-300 hover:text-emerald-400 py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Log Activity
                 </Link>
                 <Link
                   to="/impact"
-                  className="text-white hover:text-green-200 py-2"
+                  className="text-neutral-300 hover:text-emerald-400 py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   My Impact
                 </Link>
                 <Link
                   to="/leaderboard"
-                  className="text-white hover:text-green-200 py-2"
+                  className="text-neutral-300 hover:text-emerald-400 py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Leaderboard
                 </Link>
                 <Link
                   to="/profile"
-                  className="text-white hover:text-green-200 py-2"
+                  className="text-neutral-300 hover:text-emerald-400 py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Profile
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-left"
+                  className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg text-left border border-red-500/30"
                 >
                   Logout
                 </button>
@@ -169,14 +169,14 @@ const Navbar = () => {
               <div className="flex flex-col space-y-3">
                 <Link
                   to="/login"
-                  className="text-white hover:text-green-200 py-2"
+                  className="text-neutral-300 hover:text-emerald-400 py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Login
                 </Link>
                 <Link
                   to="/signup"
-                  className="bg-white text-green-600 px-4 py-2 rounded-lg text-center"
+                  className="bg-emerald-500 text-black px-4 py-2 rounded-lg text-center font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Sign Up

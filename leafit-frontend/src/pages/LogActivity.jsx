@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import activityService from '../services/activityService';
 
 const LogActivity = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [searchParams] = useSearchParams();
   const initialType = searchParams.get('type') || '';
@@ -22,6 +23,9 @@ const LogActivity = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState('');
+  const [lastImpact, setLastImpact] = useState(null);
+  const [recentActivities, setRecentActivities] = useState([]);
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
@@ -139,19 +143,79 @@ const LogActivity = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setShowSuccess(true);
-    setIsSubmitting(false);
-    setTimeout(() => {
-      setShowSuccess(false);
-      setFormData({ type: '', subType: '', description: '', quantity: '', unit: '', date: new Date().toISOString().split('T')[0] });
-    }, 2000);
+    setError('');
+    
+    try {
+      const activityData = {
+        type: formData.type,
+        subType: formData.subType,
+        name: selectedSubType?.name || formData.subType,
+        quantity: formData.quantity,
+        unit: formData.unit,
+        notes: formData.description,
+      };
+      
+      const response = await activityService.logActivity(activityData);
+      
+      // Store the impact from the response (API returns data directly, not wrapped in .data)
+      setLastImpact({
+        co2_saved: response.activity.co2_saved,
+        water_saved: response.activity.water_saved,
+        points_earned: response.activity.points_earned,
+      });
+      
+      setShowSuccess(true);
+      
+      // Dispatch custom event to notify other components (Dashboard) to refresh
+      window.dispatchEvent(new CustomEvent('activityLogged', { 
+        detail: { 
+          activity: response.activity,
+          user_stats: response.user_stats 
+        } 
+      }));
+      
+      // Refresh user data in AuthContext so all components get updated stats
+      if (refreshUser) {
+        refreshUser();
+      }
+      
+      // Refresh recent activities
+      fetchRecentActivities();
+      
+      setTimeout(() => {
+        setShowSuccess(false);
+        setLastImpact(null);
+        setFormData({ type: '', subType: '', description: '', quantity: '', unit: '', date: new Date().toISOString().split('T')[0] });
+      }, 3000);
+    } catch (err) {
+      console.error('Error logging activity:', err);
+      setError(err.response?.data?.error || 'Failed to log activity. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
+  const fetchRecentActivities = async () => {
+    try {
+      const response = await activityService.getActivities();
+      setRecentActivities(response.activities?.slice(0, 5) || []);
+    } catch (err) {
+      console.error('Error fetching activities:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecentActivities();
+  }, []);
+
   const calculateImpact = () => {
-    if (!selectedSubType || !formData.quantity) return null;
-    const baseImpact = { transport: 0.15, electricity: 0.05, recycling: 0.4, water: 0.02, food: 1.5, other: 1.0 };
-    return (parseFloat(formData.quantity) * (baseImpact[formData.type] || 0.1)).toFixed(2);
+    if (!formData.subType || !formData.quantity) return null;
+    const preview = activityService.calculateImpactPreview(
+      formData.type,
+      formData.subType,
+      formData.quantity
+    );
+    return preview;
   };
 
   const colors = {
@@ -265,11 +329,27 @@ const LogActivity = () => {
         </header>
 
         <div className="p-4 lg:p-8 max-w-4xl mx-auto">
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 bg-red-500/20 border border-red-500/30 text-red-500 px-6 py-4 rounded-xl flex items-center gap-2">
+              <span className="text-2xl">❌</span>
+              <span className="font-medium">{error}</span>
+              <button onClick={() => setError('')} className="ml-auto hover:text-red-300">✕</button>
+            </div>
+          )}
+
           {/* Success Message */}
-          {showSuccess && (
-            <div className="mb-6 bg-emerald-500/20 border border-emerald-500/30 text-emerald-500 px-6 py-4 rounded-xl flex items-center justify-center gap-2">
-              <span className="text-2xl">✅</span>
-              <span className="font-medium">Activity logged successfully! +{calculateImpact() || 10} points earned!</span>
+          {showSuccess && lastImpact && (
+            <div className="mb-6 bg-emerald-500/20 border border-emerald-500/30 text-emerald-500 px-6 py-4 rounded-xl">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <span className="text-2xl">✅</span>
+                <span className="font-medium text-lg">Activity logged successfully!</span>
+              </div>
+              <div className="flex items-center justify-center gap-6 text-sm">
+                <span>+{lastImpact.points_earned} points</span>
+                <span>🌍 {lastImpact.co2_saved.toFixed(2)} kg CO₂ saved</span>
+                {lastImpact.water_saved > 0 && <span>💧 {lastImpact.water_saved.toFixed(1)}L water saved</span>}
+              </div>
             </div>
           )}
 
@@ -365,16 +445,22 @@ const LogActivity = () => {
               </div>
 
               {/* Impact Preview */}
-              {formData.quantity && (
+              {formData.quantity && calculateImpact() && (
                 <div className="mt-6 p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
                   <h3 className="font-medium text-emerald-500 mb-2">Estimated Impact</h3>
-                  <div className="flex items-center gap-6">
+                  <div className="flex flex-wrap items-center gap-6">
                     <div>
-                      <span className={`text-2xl font-bold ${colors.text.primary}`}>{calculateImpact()} kg</span>
-                      <span className={`${colors.text.secondary} ml-1`}>CO₂ saved</span>
+                      <span className={`text-2xl font-bold ${colors.text.primary}`}>{calculateImpact().co2_saved}</span>
+                      <span className={`${colors.text.secondary} ml-1`}>kg CO₂ saved</span>
                     </div>
+                    {calculateImpact().water_saved > 0 && (
+                      <div>
+                        <span className={`text-2xl font-bold ${colors.text.primary}`}>{calculateImpact().water_saved}</span>
+                        <span className={`${colors.text.secondary} ml-1`}>L water saved</span>
+                      </div>
+                    )}
                     <div>
-                      <span className={`text-2xl font-bold ${colors.text.primary}`}>+{Math.round(parseFloat(formData.quantity) * 5)}</span>
+                      <span className={`text-2xl font-bold ${colors.text.primary}`}>+{calculateImpact().points}</span>
                       <span className={`${colors.text.secondary} ml-1`}>points</span>
                     </div>
                   </div>

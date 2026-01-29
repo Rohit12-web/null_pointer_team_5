@@ -1,19 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { signup, isAuthenticated, clearError } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: '' });
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Clear auth errors when component unmounts
+  useEffect(() => {
+    return () => {
+      if (clearError) clearError();
+    };
+  }, [clearError]);
+
+  // Password strength checker
+  const checkPasswordStrength = (password) => {
+    let score = 0;
+    if (password.length >= 6) score++;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    const labels = ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+    return { score, label: password.length > 0 ? labels[Math.min(score, 4)] : '' };
+  };
+
+  useEffect(() => {
+    setPasswordStrength(checkPasswordStrength(formData.password));
+  }, [formData.password]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Validation
+    if (!formData.name.trim()) {
+      setError('Please enter your name');
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setError('Please enter your email');
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
@@ -28,11 +71,20 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      login({ name: formData.name, email: formData.email });
-      navigate('/dashboard');
+      const result = await signup(
+        formData.name,
+        formData.email,
+        formData.password,
+        formData.confirmPassword
+      );
+      
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setError(result.error || 'Something went wrong. Please try again.');
+      }
     } catch (err) {
-      setError('Something went wrong. Please try again.');
+      setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -170,6 +222,34 @@ const Signup = () => {
                 placeholder="••••••••"
                 required
               />
+              {/* Password Strength Indicator */}
+              {formData.password && (
+                <div className="mt-2">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((level) => (
+                      <div
+                        key={level}
+                        className={`h-1 flex-1 rounded-full transition-colors ${
+                          level <= passwordStrength.score
+                            ? passwordStrength.score <= 1 ? 'bg-red-500'
+                            : passwordStrength.score <= 2 ? 'bg-orange-500'
+                            : passwordStrength.score <= 3 ? 'bg-yellow-500'
+                            : 'bg-emerald-500'
+                            : isDark ? 'bg-gray-700' : 'bg-gray-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className={`text-xs mt-1 ${colors.text.secondary}`}>
+                    Password strength: <span className={
+                      passwordStrength.score <= 1 ? 'text-red-500'
+                      : passwordStrength.score <= 2 ? 'text-orange-500'
+                      : passwordStrength.score <= 3 ? 'text-yellow-500'
+                      : 'text-emerald-500'
+                    }>{passwordStrength.label}</span>
+                  </p>
+                </div>
+              )}
             </div>
 
             <div>

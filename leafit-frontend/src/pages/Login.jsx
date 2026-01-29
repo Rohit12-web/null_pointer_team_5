@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated, error: authError, clearError } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -14,24 +14,54 @@ const Login = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Clear auth errors when component unmounts
+  useEffect(() => {
+    return () => {
+      if (clearError) clearError();
+    };
+  }, [clearError]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      await login({
-        email: formData.email,
-        name: formData.email.split('@')[0],
-      });
-      navigate('/dashboard');
+      const result = await login(formData.email, formData.password);
+      
+      if (result.success) {
+        // Store remember me preference
+        if (rememberMe) {
+          localStorage.setItem('leafit_remember_email', formData.email);
+        } else {
+          localStorage.removeItem('leafit_remember_email');
+        }
+        navigate('/dashboard');
+      } else {
+        setError(result.error || 'Invalid email or password. Please try again.');
+      }
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
+      setError(err.message || 'Invalid email or password. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Load remembered email on mount
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem('leafit_remember_email');
+    if (rememberedEmail) {
+      setFormData(prev => ({ ...prev, email: rememberedEmail }));
+      setRememberMe(true);
+    }
+  }, []);
 
   return (
     <div className="h-screen bg-[#050505] flex items-center justify-center p-8 overflow-hidden">

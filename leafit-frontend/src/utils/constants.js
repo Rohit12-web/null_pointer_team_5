@@ -25,6 +25,7 @@ export const ROUTES = {
   IMPACT: '/impact',
   LEADERBOARD: '/leaderboard',
   BADGE_STORE: '/badge-store',
+  WASTE_CLASSIFIER: '/waste-classifier',
   PROFILE: '/profile',
 };
 

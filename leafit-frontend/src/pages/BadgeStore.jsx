@@ -172,6 +172,7 @@ const BadgeStore = () => {
     { path: '/impact', label: 'My Impact', icon: '🌍' },
     { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
     { path: '/badge-store', label: 'Badge Store', icon: '🏪' },
+    { path: '/waste-classifier', label: 'Waste Classifier', icon: '♻️' },
     { path: '/profile', label: 'Profile', icon: '👤' },
   ];
 

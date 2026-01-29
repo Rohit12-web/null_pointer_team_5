@@ -11,6 +11,7 @@ import LogActivity from './pages/LogActivity';
 import Impact from './pages/Impact';
 import Leaderboard from './pages/Leaderboard';
 import BadgeStore from './pages/BadgeStore';
+import WasteClassifier from './pages/WasteClassifier';
 import Profile from './pages/Profile';
 
 const AppRoutes = () => {
@@ -24,6 +25,7 @@ const AppRoutes = () => {
       <Route path={ROUTES.IMPACT} element={<Impact />} />
       <Route path={ROUTES.LEADERBOARD} element={<Leaderboard />} />
       <Route path={ROUTES.BADGE_STORE} element={<BadgeStore />} />
+      <Route path={ROUTES.WASTE_CLASSIFIER} element={<WasteClassifier />} />
       <Route path={ROUTES.PROFILE} element={<Profile />} />
     </Routes>
   );

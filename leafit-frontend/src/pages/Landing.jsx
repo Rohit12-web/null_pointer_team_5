@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -18,19 +17,6 @@ const Landing = () => {
   const [hoveredCard, setHoveredCard] = useState(null);
 
   useEffect(() => {
-    // Initialize Lenis
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      smoothWheel: true,
-      wheelMultiplier: 1,
-    });
-
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time) => lenis.raf(time * 1000));
-    gsap.ticker.lagSmoothing(0);
-
     const ctx = gsap.context(() => {
       
       // ========== EFFECT 1: ZOOM INTO TEXT ==========
@@ -154,7 +140,6 @@ const Landing = () => {
 
     return () => {
       ctx.revert();
-      lenis.destroy();
     };
   }, []);
 
@@ -173,7 +158,7 @@ const Landing = () => {
     { label: 'Organizations', icon: '🏢' },
   ];
 
-  const revealText = "Transform your eco-friendly habits into measurable environmental impact";
+  const revealWords = ['Transform', 'your', 'eco-friendly', 'habits', 'into', 'measurable', 'environmental', 'impact'];
 
   // Marquee nodes (duplicated for seamless looping)
   const marqueeNodes = [...Array(3)].map((_, i) => (
@@ -224,8 +209,8 @@ const Landing = () => {
           <div ref={textRevealRef} className="mb-32">
             <p className="text-emerald-400 text-sm tracking-[0.3em] uppercase mb-6 reveal-up">Our Mission</p>
             <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-100 via-emerald-100 to-slate-100">
-              {revealText.split(' ').map((word, i) => (
-                <span key={i} className="reveal-word inline-block mr-[0.3em]">{word}</span>
+              {revealWords.map((word, i) => (
+                <span key={i} className="reveal-word inline-block" style={{ marginRight: '0.3em' }}>{word}</span>
               ))}
             </h2>
           </div>

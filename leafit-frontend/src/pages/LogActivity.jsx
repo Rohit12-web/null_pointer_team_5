@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const LogActivity = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const [searchParams] = useSearchParams();
   const initialType = searchParams.get('type') || '';
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     type: initialType,
@@ -16,6 +22,14 @@ const LogActivity = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  const navItems = [
+    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
+    { path: '/log-activity', label: 'Log Activity', icon: '➕' },
+    { path: '/impact', label: 'My Impact', icon: '🌍' },
+    { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
+    { path: '/profile', label: 'Profile', icon: '👤' },
+  ];
 
   const activityTypes = [
     {
@@ -114,232 +128,285 @@ const LogActivity = () => {
   const selectedSubType = selectedType?.subTypes.find((s) => s.id === formData.subType);
 
   const handleTypeSelect = (typeId) => {
-    setFormData({
-      ...formData,
-      type: typeId,
-      subType: '',
-      unit: '',
-    });
+    setFormData({ ...formData, type: typeId, subType: '', unit: '' });
   };
 
   const handleSubTypeSelect = (subTypeId) => {
     const subType = selectedType?.subTypes.find((s) => s.id === subTypeId);
-    setFormData({
-      ...formData,
-      subType: subTypeId,
-      unit: subType?.unit || '',
-    });
+    setFormData({ ...formData, subType: subTypeId, unit: subType?.unit || '' });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
-
     setShowSuccess(true);
     setIsSubmitting(false);
-
-    // Reset form after success
     setTimeout(() => {
       setShowSuccess(false);
-      setFormData({
-        type: '',
-        subType: '',
-        description: '',
-        quantity: '',
-        unit: '',
-        date: new Date().toISOString().split('T')[0],
-      });
+      setFormData({ type: '', subType: '', description: '', quantity: '', unit: '', date: new Date().toISOString().split('T')[0] });
     }, 2000);
   };
 
   const calculateImpact = () => {
     if (!selectedSubType || !formData.quantity) return null;
-    // Simple estimation based on subtype
-    const baseImpact = {
-      transport: 0.15,
-      electricity: 0.05,
-      recycling: 0.4,
-      water: 0.02,
-      food: 1.5,
-      other: 1.0,
-    };
-    const impact = (parseFloat(formData.quantity) * (baseImpact[formData.type] || 0.1)).toFixed(2);
-    return impact;
+    const baseImpact = { transport: 0.15, electricity: 0.05, recycling: 0.4, water: 0.02, food: 1.5, other: 1.0 };
+    return (parseFloat(formData.quantity) * (baseImpact[formData.type] || 0.1)).toFixed(2);
+  };
+
+  const colors = {
+    bg: {
+      primary: isDark ? '#1a1f1c' : '#f5faf7',
+      secondary: isDark ? '#162019' : '#e8f5ec',
+      card: isDark ? '#1f2d24' : '#ffffff',
+      cardGradient: isDark ? 'from-[#1f2d24] to-[#1a1f1c]' : 'from-white to-[#f5faf7]',
+    },
+    text: {
+      primary: isDark ? 'text-emerald-100' : 'text-[#1a2f1a]',
+      secondary: isDark ? 'text-[#6b8f7a]' : 'text-[#3d5c47]',
+    },
+    border: isDark ? 'border-emerald-900/50' : 'border-emerald-200',
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <p className="text-emerald-400 text-sm tracking-widest uppercase mb-2">Track Your Actions</p>
-          <h1 className="text-3xl font-bold text-white">Log Your Activity</h1>
-          <p className="text-neutral-400 mt-2">
-            Record your eco-friendly actions and see your impact grow 🌱
-          </p>
+    <div className={`min-h-screen flex ${isDark ? 'bg-[#1a1f1c]' : 'bg-[#f5faf7]'}`}>
+      {/* Sidebar */}
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50
+        w-64 ${isDark ? 'bg-[#162019]' : 'bg-[#e8f5ec]'} border-r ${colors.border}
+        transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
+        transition-transform duration-200 ease-in-out flex flex-col
+      `}>
+        <div className={`h-16 flex items-center px-6 border-b ${colors.border}`}>
+          <Link to="/" className="flex items-center gap-2">
+            <span className="text-2xl">🌿</span>
+            <span className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">LeafIt</span>
+          </Link>
         </div>
 
-        {/* Success Message */}
-        {showSuccess && (
-          <div className="mb-6 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-6 py-4 rounded-xl flex items-center justify-center space-x-2">
-            <span className="text-2xl">✅</span>
-            <span className="font-medium">Activity logged successfully! +{calculateImpact() || 10} points earned!</span>
-          </div>
-        )}
-
-        {/* Activity Type Selection */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 mb-6">
-          <h2 className="text-xl font-semibold text-white mb-4">
-            1. Select Activity Type
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {activityTypes.map((type) => (
-              <button
-                key={type.id}
-                onClick={() => handleTypeSelect(type.id)}
-                className={`p-4 rounded-xl border-2 transition-all text-left ${
-                  formData.type === type.id
-                    ? type.activeColor + ' ring-2 ring-emerald-500/30'
-                    : type.color
-                }`}
-              >
-                <span className="text-3xl block mb-2">{type.icon}</span>
-                <h3 className="font-semibold text-white">{type.name}</h3>
-                <p className="text-xs text-neutral-400 mt-1">{type.description}</p>
-              </button>
-            ))}
+        <div className={`p-4 border-b ${colors.border}`}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-medium">
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={`text-sm font-medium ${colors.text.primary} truncate`}>{user?.name || 'User'}</p>
+              <p className={`text-xs ${colors.text.secondary}`}>Log your activities</p>
+            </div>
           </div>
         </div>
 
-        {/* Sub-type Selection */}
-        {formData.type && (
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 mb-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              2. What did you do?
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {selectedType?.subTypes.map((subType) => (
+        <nav className="flex-1 p-4">
+          <ul className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+                      ${isActive ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' : `${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'}`}
+                    `}
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <div className={`p-4 border-t ${colors.border}`}>
+          <button
+            onClick={toggleTheme}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'} transition-all`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-lg">{isDark ? '🌙' : '☀️'}</span>
+              <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
+            </div>
+            <div className={`w-10 h-5 rounded-full ${isDark ? 'bg-emerald-600' : 'bg-emerald-300'} relative transition-colors`}>
+              <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${isDark ? 'left-5' : 'left-0.5'}`}></div>
+            </div>
+          </button>
+        </div>
+
+        <div className={`p-4 border-t ${colors.border}`}>
+          <button 
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }} 
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} hover:text-red-500 transition-all`}
+          >
+            <span className="text-lg">🚪</span>
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+
+      <main className="flex-1 min-w-0">
+        <header className={`h-16 ${isDark ? 'bg-[#162019]' : 'bg-[#e8f5ec]'} border-b ${colors.border} flex items-center justify-between px-4 lg:px-8`}>
+          <div className="flex items-center gap-4">
+            <button onClick={() => setSidebarOpen(true)} className={`lg:hidden p-2 ${colors.text.secondary}`}>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div>
+              <h1 className={`text-lg font-semibold ${colors.text.primary}`}>Log Activity</h1>
+              <p className={`text-xs ${colors.text.secondary}`}>Record your eco-friendly actions</p>
+            </div>
+          </div>
+        </header>
+
+        <div className="p-4 lg:p-8 max-w-4xl mx-auto">
+          {/* Success Message */}
+          {showSuccess && (
+            <div className="mb-6 bg-emerald-500/20 border border-emerald-500/30 text-emerald-500 px-6 py-4 rounded-xl flex items-center justify-center gap-2">
+              <span className="text-2xl">✅</span>
+              <span className="font-medium">Activity logged successfully! +{calculateImpact() || 10} points earned!</span>
+            </div>
+          )}
+
+          {/* Activity Type Selection */}
+          <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-2xl p-6 mb-6 ${isDark ? '' : 'shadow-sm'}`}>
+            <h2 className={`text-xl font-semibold ${colors.text.primary} mb-4`}>1. Select Activity Type</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {activityTypes.map((type) => (
                 <button
-                  key={subType.id}
-                  onClick={() => handleSubTypeSelect(subType.id)}
+                  key={type.id}
+                  onClick={() => handleTypeSelect(type.id)}
                   className={`p-4 rounded-xl border-2 transition-all text-left ${
-                    formData.subType === subType.id
-                      ? 'border-emerald-500 bg-emerald-500/10'
-                      : 'border-neutral-700 hover:border-neutral-600 bg-neutral-800'
+                    formData.type === type.id
+                      ? type.activeColor + ' ring-2 ring-emerald-500/30'
+                      : type.color
                   }`}
                 >
-                  <h3 className="font-medium text-white">{subType.name}</h3>
-                  <p className="text-sm text-emerald-400 mt-1">{subType.impact}</p>
+                  <span className="text-3xl block mb-2">{type.icon}</span>
+                  <h3 className={`font-semibold ${colors.text.primary}`}>{type.name}</h3>
+                  <p className={`text-xs ${colors.text.secondary} mt-1`}>{type.description}</p>
                 </button>
               ))}
             </div>
           </div>
-        )}
 
-        {/* Activity Details Form */}
-        {formData.subType && (
-          <form onSubmit={handleSubmit} className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              3. Activity Details
-            </h2>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Quantity */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
-                  Quantity ({selectedSubType?.unit})
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                  className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                  placeholder={`Enter ${selectedSubType?.unit}`}
-                  required
-                />
-              </div>
-
-              {/* Date */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
-                  Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  max={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                  required
-                />
-              </div>
-
-              {/* Description */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
-                  Notes (Optional)
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                  placeholder="Add any notes about this activity..."
-                />
+          {/* Sub-type Selection */}
+          {formData.type && (
+            <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-2xl p-6 mb-6 ${isDark ? '' : 'shadow-sm'}`}>
+              <h2 className={`text-xl font-semibold ${colors.text.primary} mb-4`}>2. What did you do?</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {selectedType?.subTypes.map((subType) => (
+                  <button
+                    key={subType.id}
+                    onClick={() => handleSubTypeSelect(subType.id)}
+                    className={`p-4 rounded-xl border-2 transition-all text-left ${
+                      formData.subType === subType.id
+                        ? 'border-emerald-500 bg-emerald-500/10'
+                        : `${isDark ? 'border-emerald-800/30 bg-[#162019]' : 'border-emerald-200 bg-white'} hover:border-emerald-500/50`
+                    }`}
+                  >
+                    <h3 className={`font-medium ${colors.text.primary}`}>{subType.name}</h3>
+                    <p className="text-sm text-emerald-500 mt-1">{subType.impact}</p>
+                  </button>
+                ))}
               </div>
             </div>
+          )}
 
-            {/* Impact Preview */}
-            {formData.quantity && (
-              <div className="mt-6 p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                <h3 className="font-medium text-emerald-400 mb-2">Estimated Impact</h3>
-                <div className="flex items-center space-x-6">
-                  <div>
-                    <span className="text-2xl font-bold text-white">
-                      {calculateImpact()} kg
-                    </span>
-                    <span className="text-neutral-400 ml-1">CO₂ saved</span>
-                  </div>
-                  <div>
-                    <span className="text-2xl font-bold text-white">
-                      +{Math.round(parseFloat(formData.quantity) * 5)}
-                    </span>
-                    <span className="text-neutral-400 ml-1">points</span>
-                  </div>
+          {/* Activity Details Form */}
+          {formData.subType && (
+            <form onSubmit={handleSubmit} className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-2xl p-6 ${isDark ? '' : 'shadow-sm'}`}>
+              <h2 className={`text-xl font-semibold ${colors.text.primary} mb-4`}>3. Activity Details</h2>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className={`block text-sm font-medium ${colors.text.primary} mb-2`}>
+                    Quantity ({selectedSubType?.unit})
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                    className={`w-full px-4 py-3 ${isDark ? 'bg-[#162019]' : 'bg-white'} border ${isDark ? 'border-emerald-800/50' : 'border-emerald-200'} rounded-xl ${colors.text.primary} placeholder-[#6b8f7a] focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all`}
+                    placeholder={`Enter ${selectedSubType?.unit}`}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium ${colors.text.primary} mb-2`}>Date</label>
+                  <input
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    max={new Date().toISOString().split('T')[0]}
+                    className={`w-full px-4 py-3 ${isDark ? 'bg-[#162019]' : 'bg-white'} border ${isDark ? 'border-emerald-800/50' : 'border-emerald-200'} rounded-xl ${colors.text.primary} focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all`}
+                    required
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className={`block text-sm font-medium ${colors.text.primary} mb-2`}>Notes (Optional)</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                    className={`w-full px-4 py-3 ${isDark ? 'bg-[#162019]' : 'bg-white'} border ${isDark ? 'border-emerald-800/50' : 'border-emerald-200'} rounded-xl ${colors.text.primary} placeholder-[#6b8f7a] focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all`}
+                    placeholder="Add any notes about this activity..."
+                  />
                 </div>
               </div>
-            )}
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`mt-6 w-full py-4 rounded-xl font-semibold text-lg transition-all ${
-                isSubmitting
-                  ? 'bg-neutral-700 cursor-not-allowed text-neutral-400'
-                  : 'bg-emerald-500 hover:bg-emerald-400 text-black transform hover:scale-[1.02]'
-              }`}
-            >
-              {isSubmitting ? (
-                <span className="flex items-center justify-center space-x-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  <span>Logging Activity...</span>
-                </span>
-              ) : (
-                'Log Activity 🌿'
+              {/* Impact Preview */}
+              {formData.quantity && (
+                <div className="mt-6 p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                  <h3 className="font-medium text-emerald-500 mb-2">Estimated Impact</h3>
+                  <div className="flex items-center gap-6">
+                    <div>
+                      <span className={`text-2xl font-bold ${colors.text.primary}`}>{calculateImpact()} kg</span>
+                      <span className={`${colors.text.secondary} ml-1`}>CO₂ saved</span>
+                    </div>
+                    <div>
+                      <span className={`text-2xl font-bold ${colors.text.primary}`}>+{Math.round(parseFloat(formData.quantity) * 5)}</span>
+                      <span className={`${colors.text.secondary} ml-1`}>points</span>
+                    </div>
+                  </div>
+                </div>
               )}
-            </button>
-          </form>
-        )}
-      </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`mt-6 w-full py-4 rounded-xl font-semibold text-lg transition-all ${
+                  isSubmitting
+                    ? 'bg-emerald-800/50 text-emerald-300/50 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-lg shadow-emerald-900/30 transform hover:scale-[1.02]'
+                }`}
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>Logging Activity...</span>
+                  </span>
+                ) : (
+                  'Log Activity 🌿'
+                )}
+              </button>
+            </form>
+          )}
+        </div>
+      </main>
     </div>
   );
 };

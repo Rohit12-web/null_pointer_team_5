@@ -1,344 +1,265 @@
 import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const Profile = () => {
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
-  const [profileData, setProfileData] = useState({
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const navItems = [
+    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
+    { path: '/log-activity', label: 'Log Activity', icon: '➕' },
+    { path: '/impact', label: 'My Impact', icon: '🌍' },
+    { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
+    { path: '/profile', label: 'Profile', icon: '👤' },
+  ];
+
+  const profileData = {
     name: user?.name || 'Eco Warrior',
     email: user?.email || 'eco@leafit.com',
-    bio: 'Passionate about making the world a greener place! 🌿',
-    location: 'Earth 🌍',
-    joinedDate: 'January 2024',
-  });
-
-  // Mock user stats
-  const userStats = {
+    joinDate: 'January 2024',
+    level: 8,
     totalPoints: 2450,
-    totalCO2Saved: 156.8,
-    totalActivities: 87,
+    co2Saved: 156.8,
+    activitiesLogged: 87,
     currentStreak: 7,
     longestStreak: 21,
     rank: 42,
-    level: 8,
-    xpToNextLevel: 350,
-    currentXP: 2450,
-    nextLevelXP: 2800,
   };
 
-  // Mock badges
   const badges = [
-    { id: 1, type: 'gold', name: 'First Steps', description: 'Log your first activity', earnedAt: '2024-01-15', icon: '🌱' },
-    { id: 2, type: 'silver', name: 'Week Warrior', description: '7 day streak', earnedAt: '2024-01-22', icon: '🔥' },
-    { id: 3, type: 'bronze', name: 'Recycler', description: 'Recycle 10 items', earnedAt: '2024-01-20', icon: '♻️' },
-    { id: 4, type: 'gold', name: 'Transport Hero', description: 'Use public transport 20 times', earnedAt: '2024-01-25', icon: '🚌' },
-    { id: 5, type: 'platinum', name: 'Eco Champion', description: 'Save 100kg CO₂', earnedAt: '2024-01-28', icon: '🏆' },
-    { id: 6, type: 'bronze', name: 'Water Saver', description: 'Save 500L of water', earnedAt: null, isLocked: true, icon: '💧' },
-    { id: 7, type: 'silver', name: 'Month Master', description: '30 day streak', earnedAt: null, isLocked: true, icon: '📅' },
-    { id: 8, type: 'gold', name: 'Community Leader', description: 'Reach top 10', earnedAt: null, isLocked: true, icon: '👑' },
+    { id: 1, icon: '🌱', name: 'First Steps', description: 'Log your first activity', earned: true },
+    { id: 2, icon: '🔥', name: 'On Fire', description: '7-day streak', earned: true },
+    { id: 3, icon: '♻️', name: 'Recycler', description: 'Recycle 50 items', earned: true },
+    { id: 4, icon: '💧', name: 'Water Saver', description: 'Save 1000L of water', earned: true },
+    { id: 5, icon: '🚴', name: 'Cyclist', description: 'Cycle 100km', earned: true },
+    { id: 6, icon: '🌳', name: 'Tree Hugger', description: 'Plant 5 trees', earned: false },
+    { id: 7, icon: '⚡', name: 'Energy Master', description: 'Save 500kWh', earned: false },
+    { id: 8, icon: '🏆', name: 'Top 10', description: 'Reach top 10 globally', earned: false },
   ];
 
-  // Monthly progress data
-  const monthlyProgress = [
-    { label: 'Week 1', value: 45 },
-    { label: 'Week 2', value: 62 },
-    { label: 'Week 3', value: 58 },
-    { label: 'Week 4', value: 75 },
+  const recentActivities = [
+    { id: 1, icon: '🚌', description: 'Took the bus to work', points: 25, date: 'Today' },
+    { id: 2, icon: '💡', description: 'Used LED lights all day', points: 15, date: 'Yesterday' },
+    { id: 3, icon: '♻️', description: 'Recycled plastic bottles', points: 20, date: '2 days ago' },
+    { id: 4, icon: '💧', description: 'Shorter shower', points: 10, date: '3 days ago' },
+    { id: 5, icon: '🥗', description: 'Plant-based lunch', points: 30, date: '4 days ago' },
   ];
 
-  // Activity breakdown
-  const activityBreakdown = [
-    { label: 'Transport', value: 35, color: '#3B82F6' },
-    { label: 'Energy', value: 28, color: '#F59E0B' },
-    { label: 'Recycling', value: 20, color: '#10B981' },
-    { label: 'Water', value: 12, color: '#06B6D4' },
-    { label: 'Other', value: 5, color: '#8B5CF6' },
-  ];
-
-  const levelProgress = ((userStats.currentXP % 350) / 350) * 100;
-
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: '📊' },
-    { id: 'badges', label: 'Badges', icon: '🏆' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' },
-  ];
-
-  const getBadgeColor = (type) => {
-    const colors = {
-      platinum: 'from-purple-500 to-pink-500',
-      gold: 'from-yellow-400 to-orange-500',
-      silver: 'from-gray-300 to-gray-500',
-      bronze: 'from-orange-400 to-orange-600',
-    };
-    return colors[type] || colors.bronze;
+  const colors = {
+    bg: {
+      primary: isDark ? '#1a1f1c' : '#f5faf7',
+      secondary: isDark ? '#162019' : '#e8f5ec',
+      card: isDark ? '#1f2d24' : '#ffffff',
+      cardGradient: isDark ? 'from-[#1f2d24] to-[#1a1f1c]' : 'from-white to-[#f5faf7]',
+    },
+    text: {
+      primary: isDark ? 'text-emerald-100' : 'text-[#1a2f1a]',
+      secondary: isDark ? 'text-[#6b8f7a]' : 'text-[#3d5c47]',
+    },
+    border: isDark ? 'border-emerald-900/50' : 'border-emerald-200',
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-8">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Profile Header */}
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-8 text-white mb-8 relative overflow-hidden">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 right-0 text-[200px]">🌿</div>
-          </div>
+    <div className={`min-h-screen flex ${isDark ? 'bg-[#1a1f1c]' : 'bg-[#f5faf7]'}`}>
+      {/* Sidebar */}
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50
+        w-64 ${isDark ? 'bg-[#162019]' : 'bg-[#e8f5ec]'} border-r ${colors.border}
+        transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
+        transition-transform duration-200 ease-in-out flex flex-col
+      `}>
+        <div className={`h-16 flex items-center px-6 border-b ${colors.border}`}>
+          <Link to="/" className="flex items-center gap-2">
+            <span className="text-2xl">🌿</span>
+            <span className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">LeafIt</span>
+          </Link>
+        </div>
 
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative z-10">
-            {/* Avatar */}
-            <div className="relative">
-              <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-5xl border-4 border-white/30">
-                🌱
-              </div>
-              <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-gray-800 text-sm font-bold px-2 py-1 rounded-full">
-                Lvl {userStats.level}
-              </div>
+        <div className={`p-4 border-b ${colors.border}`}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-medium">
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
             </div>
-
-            {/* User Info */}
-            <div className="flex-1 text-center md:text-left">
-              <h1 className="text-3xl font-bold">{profileData.name}</h1>
-              <p className="text-emerald-100 mt-1">{profileData.bio}</p>
-              <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4 text-sm text-emerald-100">
-                <span className="flex items-center gap-1">
-                  <span>📍</span> {profileData.location}
-                </span>
-                <span className="flex items-center gap-1">
-                  <span>📅</span> Joined {profileData.joinedDate}
-                </span>
-                <span className="flex items-center gap-1">
-                  <span>🏆</span> Rank #{userStats.rank}
-                </span>
-              </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div className="bg-white/10 rounded-xl p-4">
-                <div className="text-2xl font-bold">{userStats.totalPoints}</div>
-                <div className="text-sm text-emerald-100">Points</div>
-              </div>
-              <div className="bg-white/10 rounded-xl p-4">
-                <div className="text-2xl font-bold">{userStats.currentStreak} 🔥</div>
-                <div className="text-sm text-emerald-100">Day Streak</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Level Progress */}
-          <div className="mt-6 relative z-10">
-            <div className="flex justify-between text-sm mb-2">
-              <span>Level {userStats.level}</span>
-              <span>{userStats.xpToNextLevel} XP to Level {userStats.level + 1}</span>
-            </div>
-            <div className="w-full h-3 bg-white/20 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-yellow-400 rounded-full transition-all duration-500"
-                style={{ width: `${levelProgress}%` }}
-              />
+            <div className="flex-1 min-w-0">
+              <p className={`text-sm font-medium ${colors.text.primary} truncate`}>{user?.name || 'User'}</p>
+              <p className={`text-xs ${colors.text.secondary}`}>Level {profileData.level}</p>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl mb-8">
-          <div className="flex border-b border-neutral-800">
-            {tabs.map((tab) => (
+        <nav className="flex-1 p-4">
+          <ul className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+                      ${isActive ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' : `${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'}`}
+                    `}
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <div className={`p-4 border-t ${colors.border}`}>
+          <button
+            onClick={toggleTheme}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'} transition-all`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-lg">{isDark ? '🌙' : '☀️'}</span>
+              <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
+            </div>
+            <div className={`w-10 h-5 rounded-full ${isDark ? 'bg-emerald-600' : 'bg-emerald-300'} relative transition-colors`}>
+              <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${isDark ? 'left-5' : 'left-0.5'}`}></div>
+            </div>
+          </button>
+        </div>
+
+        <div className={`p-4 border-t ${colors.border}`}>
+          <button 
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }} 
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} hover:text-red-500 transition-all`}
+          >
+            <span className="text-lg">🚪</span>
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+
+      <main className="flex-1 min-w-0">
+        <header className={`h-16 ${isDark ? 'bg-[#162019]' : 'bg-[#e8f5ec]'} border-b ${colors.border} flex items-center justify-between px-4 lg:px-8`}>
+          <div className="flex items-center gap-4">
+            <button onClick={() => setSidebarOpen(true)} className={`lg:hidden p-2 ${colors.text.secondary}`}>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div>
+              <h1 className={`text-lg font-semibold ${colors.text.primary}`}>Profile</h1>
+              <p className={`text-xs ${colors.text.secondary}`}>Manage your account</p>
+            </div>
+          </div>
+        </header>
+
+        <div className="p-4 lg:p-8">
+          {/* Profile Header */}
+          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 mb-8 text-white">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-4xl font-bold">
+                {profileData.name.charAt(0)}
+              </div>
+              <div className="text-center md:text-left flex-1">
+                <h2 className="text-2xl font-bold">{profileData.name}</h2>
+                <p className="text-emerald-100">{profileData.email}</p>
+                <p className="text-sm text-emerald-200 mt-1">Member since {profileData.joinDate}</p>
+              </div>
+              <div className="grid grid-cols-3 gap-6 text-center">
+                <div>
+                  <div className="text-2xl font-bold">{profileData.totalPoints}</div>
+                  <div className="text-xs text-emerald-200">Points</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">#{profileData.rank}</div>
+                  <div className="text-xs text-emerald-200">Rank</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{profileData.co2Saved}kg</div>
+                  <div className="text-xs text-emerald-200">CO₂ Saved</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className={`flex gap-2 mb-6 border-b ${colors.border} pb-4`}>
+            {['overview', 'badges', 'activity'].map((tab) => (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 py-4 font-medium transition-colors flex items-center justify-center gap-2 ${
-                  activeTab === tab.id
-                    ? 'text-emerald-400 border-b-2 border-emerald-500'
-                    : 'text-neutral-500 hover:text-neutral-300'
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === tab
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
+                    : `${isDark ? 'bg-[#1f2d24] text-[#6b8f7a]' : 'bg-white text-[#3d5c47]'} hover:text-emerald-500`
                 }`}
               >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
             ))}
           </div>
 
           {/* Tab Content */}
-          <div className="p-6">
-            {/* Overview Tab */}
-            {activeTab === 'overview' && (
-              <div className="space-y-8">
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-neutral-800 rounded-xl p-4 text-center border border-neutral-700">
-                    <div className="text-3xl font-bold text-emerald-500">{userStats.totalCO2Saved}</div>
-                    <div className="text-sm text-neutral-400">kg CO₂ Saved</div>
+          {activeTab === 'overview' && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { label: 'Activities Logged', value: profileData.activitiesLogged, icon: '📝' },
+                { label: 'Current Streak', value: `${profileData.currentStreak} days`, icon: '🔥' },
+                { label: 'Longest Streak', value: `${profileData.longestStreak} days`, icon: '⭐' },
+                { label: 'Level', value: profileData.level, icon: '🎯' },
+              ].map((stat, i) => (
+                <div key={i} className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-5 ${isDark ? '' : 'shadow-sm'}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className={`${colors.text.secondary} text-sm`}>{stat.label}</span>
+                    <span className="text-xl">{stat.icon}</span>
                   </div>
-                  <div className="bg-neutral-800 rounded-xl p-4 text-center border border-neutral-700">
-                    <div className="text-3xl font-bold text-blue-500">{userStats.totalActivities}</div>
-                    <div className="text-sm text-neutral-400">Activities</div>
-                  </div>
-                  <div className="bg-neutral-800 rounded-xl p-4 text-center border border-neutral-700">
-                    <div className="text-3xl font-bold text-orange-500">{userStats.longestStreak}</div>
-                    <div className="text-sm text-neutral-400">Longest Streak</div>
-                  </div>
-                  <div className="bg-neutral-800 rounded-xl p-4 text-center border border-neutral-700">
-                    <div className="text-3xl font-bold text-purple-500">{badges.filter(b => !b.isLocked).length}</div>
-                    <div className="text-sm text-neutral-400">Badges Earned</div>
-                  </div>
+                  <div className={`text-2xl font-bold ${colors.text.primary}`}>{stat.value}</div>
                 </div>
+              ))}
+            </div>
+          )}
 
-                {/* Charts */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-neutral-800 border border-neutral-700 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Monthly Progress</h3>
-                    <div className="flex items-end justify-between h-40 gap-2">
-                      {monthlyProgress.map((week, i) => (
-                        <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                          <div 
-                            className="w-full bg-emerald-500 rounded-t-lg transition-all hover:bg-emerald-400"
-                            style={{ height: `${(week.value / 80) * 100}%` }}
-                          />
-                          <span className="text-xs text-neutral-500">{week.label}</span>
-                        </div>
-                      ))}
+          {activeTab === 'badges' && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {badges.map((badge) => (
+                <div key={badge.id} className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-4 text-center ${!badge.earned ? 'opacity-50' : ''} ${isDark ? '' : 'shadow-sm'}`}>
+                  <div className="text-4xl mb-2">{badge.icon}</div>
+                  <h3 className={`font-medium ${colors.text.primary}`}>{badge.name}</h3>
+                  <p className={`text-xs ${colors.text.secondary} mt-1`}>{badge.description}</p>
+                  {badge.earned && <span className="inline-block mt-2 text-xs text-emerald-500">✓ Earned</span>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'activity' && (
+            <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-6 ${isDark ? '' : 'shadow-sm'}`}>
+              <div className="space-y-3">
+                {recentActivities.map((activity) => (
+                  <div key={activity.id} className={`flex items-center gap-4 p-3 rounded-lg ${isDark ? 'hover:bg-[#162019]' : 'hover:bg-emerald-50'} transition-colors`}>
+                    <div className={`w-10 h-10 ${isDark ? 'bg-[#162019]' : 'bg-emerald-100'} rounded-lg flex items-center justify-center text-xl`}>
+                      {activity.icon}
                     </div>
-                  </div>
-                  <div className="bg-neutral-800 border border-neutral-700 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Activity Breakdown</h3>
-                    <div className="space-y-3">
-                      {activityBreakdown.map((item, i) => (
-                        <div key={i}>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-neutral-300">{item.label}</span>
-                            <span className="text-neutral-400">{item.value}%</span>
-                          </div>
-                          <div className="h-2 bg-neutral-700 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full rounded-full"
-                              style={{ width: `${item.value}%`, backgroundColor: item.color }}
-                            />
-                          </div>
-                        </div>
-                      ))}
+                    <div className="flex-1">
+                      <p className={`font-medium ${colors.text.primary}`}>{activity.description}</p>
+                      <p className={`text-sm ${colors.text.secondary}`}>{activity.date}</p>
                     </div>
+                    <span className="text-emerald-500 font-medium">+{activity.points} pts</span>
                   </div>
-                </div>
-
-                {/* Recent Badges */}
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-4">Recent Badges</h3>
-                  <div className="flex flex-wrap gap-4">
-                    {badges.filter(b => !b.isLocked).slice(0, 5).map((badge) => (
-                      <div 
-                        key={badge.id}
-                        className={`bg-gradient-to-br ${getBadgeColor(badge.type)} p-4 rounded-xl text-center min-w-[100px]`}
-                      >
-                        <div className="text-3xl mb-2">{badge.icon}</div>
-                        <div className="text-sm font-medium text-white">{badge.name}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
-            )}
-
-            {/* Badges Tab */}
-            {activeTab === 'badges' && (
-              <div className="space-y-8">
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-4">
-                    Earned Badges ({badges.filter(b => !b.isLocked).length})
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {badges.filter(b => !b.isLocked).map((badge) => (
-                      <div 
-                        key={badge.id}
-                        className={`bg-gradient-to-br ${getBadgeColor(badge.type)} p-6 rounded-xl text-center`}
-                      >
-                        <div className="text-4xl mb-3">{badge.icon}</div>
-                        <div className="font-semibold text-white">{badge.name}</div>
-                        <div className="text-xs text-white/70 mt-1">{badge.description}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-4">
-                    Locked Badges ({badges.filter(b => b.isLocked).length})
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {badges.filter(b => b.isLocked).map((badge) => (
-                      <div 
-                        key={badge.id}
-                        className="bg-neutral-800 border border-neutral-700 p-6 rounded-xl text-center opacity-50"
-                      >
-                        <div className="text-4xl mb-3 grayscale">{badge.icon}</div>
-                        <div className="font-semibold text-neutral-400">{badge.name}</div>
-                        <div className="text-xs text-neutral-500 mt-1">{badge.description}</div>
-                        <div className="text-xs text-neutral-600 mt-2">🔒 Locked</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Settings Tab */}
-            {activeTab === 'settings' && (
-              <div className="space-y-6 max-w-xl">
-                <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-2">Name</label>
-                  <input
-                    type="text"
-                    value={profileData.name}
-                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                    className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                    className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-2">Bio</label>
-                  <textarea
-                    value={profileData.bio}
-                    onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
-                    rows={3}
-                    className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-2">Location</label>
-                  <input
-                    type="text"
-                    value={profileData.location}
-                    onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
-                    className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                  />
-                </div>
-
-                <div className="flex gap-4 pt-4">
-                  <button className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black py-3 rounded-xl font-medium transition-colors">
-                    Save Changes
-                  </button>
-                  <button
-                    onClick={logout}
-                    className="px-6 py-3 border border-red-500/50 text-red-400 hover:bg-red-500/10 rounded-xl font-medium transition-colors"
-                  >
-                    Logout
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-      </div>
+      </main>
     </div>
   );
 };

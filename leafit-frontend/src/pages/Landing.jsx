@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Plant02Icon, Car04Icon, Idea01Icon } from '@hugeicons/core-free-icons';
+import { Droplet, Users, Leaf, BarChart3, Building2, Sparkles, Heart, TreeDeciduous } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -159,18 +162,18 @@ const Landing = () => {
   }, []);
 
   const features = [
-    { icon: '🚌', title: 'Track Transport', desc: 'Log your eco-friendly commutes and travel choices', color: 'from-blue-500 to-cyan-500', shadowColor: 'shadow-blue-500/50' },
-    { icon: '💡', title: 'Save Energy', desc: 'Monitor electricity savings and reduce your footprint', color: 'from-yellow-500 to-orange-500', shadowColor: 'shadow-yellow-500/50' },
+    { icon: <HugeiconsIcon icon={Car04Icon} className="text-3xl md:text-4xl text-white" />, title: 'Track Transport', desc: 'Log your eco-friendly commutes and travel choices', color: 'from-blue-500 to-cyan-500', shadowColor: 'shadow-blue-500/50' },
+    { icon: <HugeiconsIcon icon={Idea01Icon} className="text-3xl md:text-4xl text-white" />, title: 'Save Energy', desc: 'Monitor electricity savings and reduce your footprint', color: 'from-yellow-500 to-orange-500', shadowColor: 'shadow-yellow-500/50' },
     { icon: '♻️', title: 'Reduce Waste', desc: 'Track recycling efforts and waste reduction', color: 'from-green-500 to-emerald-500', shadowColor: 'shadow-green-500/50' },
-    { icon: '🌱', title: 'Plant Based', desc: 'Log sustainable food choices and their impact', color: 'from-emerald-500 to-teal-500', shadowColor: 'shadow-emerald-500/50' },
-    { icon: '💧', title: 'Save Water', desc: 'Monitor water conservation in daily activities', color: 'from-cyan-500 to-blue-500', shadowColor: 'shadow-cyan-500/50' },
+    { icon: <HugeiconsIcon icon={Plant02Icon} className="text-3xl md:text-4xl text-white" />, title: 'Plant Based', desc: 'Log sustainable food choices and their impact', color: 'from-emerald-500 to-teal-500', shadowColor: 'shadow-emerald-500/50' },
+    { icon: <Droplet className="w-8 h-8 md:w-10 md:h-10 text-white" />, title: 'Save Water', desc: 'Monitor water conservation in daily activities', color: 'from-cyan-500 to-blue-500', shadowColor: 'shadow-cyan-500/50' },
   ];
 
   const stats = [
-    { label: 'Active Users', icon: '👥' },
-    { label: 'CO₂ Saved', icon: '🌿' },
-    { label: 'Activities Logged', icon: '📊' },
-    { label: 'Organizations', icon: '🏢' },
+    { label: 'Active Users', icon: <Users className="w-10 h-10 text-emerald-400" /> },
+    { label: 'CO₂ Saved', icon: <Leaf className="w-10 h-10 text-emerald-400" /> },
+    { label: 'Activities Logged', icon: <BarChart3 className="w-10 h-10 text-emerald-400" /> },
+    { label: 'Organizations', icon: <Building2 className="w-10 h-10 text-emerald-400" /> },
   ];
 
   const revealText = "Transform your eco-friendly habits into measurable environmental impact";
@@ -234,7 +237,7 @@ const Landing = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 reveal-up">
             {stats.map((stat, i) => (
               <div key={i} className="text-center p-6 border border-emerald-900/50 bg-gradient-to-b from-[#1f2d24] to-[#1a1f1c] rounded-2xl hover:border-emerald-600/50 transition-all hover:shadow-lg hover:shadow-emerald-900/20">
-                <span className="text-4xl mb-4 block">{stat.icon}</span>
+                <span className="mb-4 flex justify-center">{stat.icon}</span>
                 <div className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 tracking-wider uppercase">{stat.label}</div>
               </div>
             ))}
@@ -249,19 +252,28 @@ const Landing = () => {
         
         {/* Floating particles */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(12)].map((_, i) => (
-            <div
-              key={i}
-              className="floating-particle absolute text-emerald-500/20"
-              style={{
-                left: `${10 + (i * 7)}%`,
-                top: `${20 + (i * 5)}%`,
-                fontSize: `${20 + (i % 3) * 15}px`,
-              }}
-            >
-              {['🌿', '🍃', '✨', '💚'][i % 4]}
-            </div>
-          ))}
+          {[...Array(12)].map((_, i) => {
+            const icons = [
+              <Leaf key="leaf" className="w-full h-full text-emerald-500/20" />,
+              <TreeDeciduous key="tree" className="w-full h-full text-emerald-500/20" />,
+              <Sparkles key="sparkle" className="w-full h-full text-emerald-500/20" />,
+              <Heart key="heart" className="w-full h-full text-emerald-500/20" />
+            ];
+            return (
+              <div
+                key={i}
+                className="floating-particle absolute"
+                style={{
+                  left: `${10 + (i * 7)}%`,
+                  top: `${20 + (i * 5)}%`,
+                  width: `${20 + (i % 3) * 15}px`,
+                  height: `${20 + (i % 3) * 15}px`,
+                }}
+              >
+                {icons[i % 4]}
+              </div>
+            );
+          })}
         </div>
 
         {/* Grid pattern overlay */}
@@ -358,7 +370,11 @@ const Landing = () => {
                         transition-all duration-300
                         group-hover:scale-110
                       `}>
-                        <span className="text-3xl md:text-4xl filter drop-shadow-lg">{feature.icon}</span>
+                        {typeof feature.icon === 'string' ? (
+                          <span className="text-3xl md:text-4xl filter drop-shadow-lg">{feature.icon}</span>
+                        ) : (
+                          <span className="filter drop-shadow-lg">{feature.icon}</span>
+                        )}
                         {/* Icon glow */}
                         <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${feature.color} blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-300`} />
                       </div>
@@ -498,7 +514,7 @@ const Landing = () => {
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-3">
-              <span className="text-3xl">🌿</span>
+              <Leaf className="w-8 h-8 text-emerald-400" />
               <span className="text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-300">LeafIt</span>
             </div>
             <div className="flex gap-8 text-[#6b8f7a] text-sm">

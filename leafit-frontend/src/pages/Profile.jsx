@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import activityService from '../services/activityService';
 
 const Profile = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [profileData, setProfileData] = useState({
+    name: user?.name || 'Eco Warrior',
+    email: user?.email || 'eco@leafit.com',
+    joinDate: 'Member',
+    level: 1,
+    totalPoints: 0,
+    co2Saved: 0,
+    activitiesLogged: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    rank: 0,
+  });
+  const [badges, setBadges] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]);
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
@@ -20,37 +36,189 @@ const Profile = () => {
     { path: '/profile', label: 'Profile', icon: '👤' },
   ];
 
-  const profileData = {
-    name: user?.name || 'Eco Warrior',
-    email: user?.email || 'eco@leafit.com',
-    joinDate: 'January 2024',
-    level: 8,
-    totalPoints: 2450,
-    co2Saved: 156.8,
-    activitiesLogged: 87,
-    currentStreak: 7,
-    longestStreak: 21,
-    rank: 42,
+  const activityIcons = {
+    transport: '🚌',
+    electricity: '💡',
+    recycling: '♻️',
+    water: '💧',
+    food: '🥗',
+    other: '🌳',
   };
 
-  const badges = [
-    { id: 1, icon: '🌱', name: 'First Steps', description: 'Log your first activity', earned: true },
-    { id: 2, icon: '🔥', name: 'On Fire', description: '7-day streak', earned: true },
-    { id: 3, icon: '♻️', name: 'Recycler', description: 'Recycle 50 items', earned: true },
-    { id: 4, icon: '💧', name: 'Water Saver', description: 'Save 1000L of water', earned: true },
-    { id: 5, icon: '🚴', name: 'Cyclist', description: 'Cycle 100km', earned: true },
-    { id: 6, icon: '🌳', name: 'Tree Hugger', description: 'Plant 5 trees', earned: false },
-    { id: 7, icon: '⚡', name: 'Energy Master', description: 'Save 500kWh', earned: false },
-    { id: 8, icon: '🏆', name: 'Top 10', description: 'Reach top 10 globally', earned: false },
-  ];
+  // Format time ago
+  const formatTimeAgo = (dateString) => {
+    if (!dateString) return 'Just now';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString();
+  };
 
-  const recentActivities = [
-    { id: 1, icon: '🚌', description: 'Took the bus to work', points: 25, date: 'Today' },
-    { id: 2, icon: '💡', description: 'Used LED lights all day', points: 15, date: 'Yesterday' },
-    { id: 3, icon: '♻️', description: 'Recycled plastic bottles', points: 20, date: '2 days ago' },
-    { id: 4, icon: '💧', description: 'Shorter shower', points: 10, date: '3 days ago' },
-    { id: 5, icon: '🥗', description: 'Plant-based lunch', points: 30, date: '4 days ago' },
-  ];
+  // Calculate badges based on user stats and activities
+  const calculateBadges = useCallback((stats, activities) => {
+    const badgesList = [
+      { 
+        id: 1, 
+        icon: '🌱', 
+        name: 'First Steps', 
+        description: 'Log your first activity', 
+        earned: activities.length > 0 
+      },
+      { 
+        id: 2, 
+        icon: '🔥', 
+        name: 'On Fire', 
+        description: '7-day streak', 
+        earned: stats.currentStreak >= 7 
+      },
+      { 
+        id: 3, 
+        icon: '♻️', 
+        name: 'Recycler', 
+        description: 'Recycle 10 items', 
+        earned: activities.filter(a => a.activity_type === 'recycling').length >= 10 
+      },
+      { 
+        id: 4, 
+        icon: '💧', 
+        name: 'Water Saver', 
+        description: 'Log 10 water activities', 
+        earned: activities.filter(a => a.activity_type === 'water').length >= 10 
+      },
+      { 
+        id: 5, 
+        icon: '🚴', 
+        name: 'Green Commuter', 
+        description: '10 transport activities', 
+        earned: activities.filter(a => a.activity_type === 'transport').length >= 10 
+      },
+      { 
+        id: 6, 
+        icon: '🌳', 
+        name: 'Eco Warrior', 
+        description: 'Save 100kg CO₂', 
+        earned: stats.co2Saved >= 100 
+      },
+      { 
+        id: 7, 
+        icon: '⚡', 
+        name: 'Energy Master', 
+        description: '10 electricity activities', 
+        earned: activities.filter(a => a.activity_type === 'electricity').length >= 10 
+      },
+      { 
+        id: 8, 
+        icon: '🏆', 
+        name: 'Point Master', 
+        description: 'Earn 5000 points', 
+        earned: stats.totalPoints >= 5000 
+      },
+    ];
+    return badgesList;
+  }, []);
+
+  // Fetch profile data
+  const fetchProfileData = useCallback(async () => {
+    try {
+      const [activitiesRes, statsRes, leaderboardRes] = await Promise.all([
+        activityService.getActivities().catch(() => ({ activities: [] })),
+        activityService.getUserStats().catch(() => ({ stats: {} })),
+        activityService.getLeaderboard().catch(() => ({ leaderboard: [] })),
+      ]);
+      
+      const activities = activitiesRes.activities || [];
+      const stats = statsRes.stats || {};
+      const leaderboard = leaderboardRes.leaderboard || [];
+      
+      // Find user rank
+      const userRank = leaderboard.findIndex(u => u.id === user?.id) + 1;
+      
+      // Calculate join date
+      const joinDate = user?.date_joined 
+        ? new Date(user.date_joined).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        : 'Member';
+      
+      const totalPoints = stats.total_points || user?.total_points || 0;
+      const co2Saved = stats.total_co2_saved || user?.total_co2_saved || 0;
+      const currentStreak = stats.current_streak || user?.current_streak || 0;
+      
+      const newProfileData = {
+        name: user?.name || 'Eco Warrior',
+        email: user?.email || 'eco@leafit.com',
+        joinDate,
+        level: Math.floor(totalPoints / 500) + 1,
+        totalPoints,
+        co2Saved,
+        activitiesLogged: stats.activities_count || activities.length || 0,
+        currentStreak,
+        longestStreak: Math.max(currentStreak, stats.longest_streak || 0),
+        rank: userRank || 0,
+      };
+      
+      setProfileData(newProfileData);
+      setBadges(calculateBadges(newProfileData, activities));
+      
+      // Format recent activities
+      const formattedActivities = activities.slice(0, 10).map((act, index) => ({
+        id: act.id || index,
+        icon: activityIcons[act.activity_type] || '🌱',
+        description: act.activity_name,
+        points: act.points_earned,
+        date: formatTimeAgo(act.activity_date || act.created_at),
+      }));
+      setRecentActivities(formattedActivities);
+      
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user, calculateBadges]);
+
+  // Initial data fetch
+  useEffect(() => {
+    fetchProfileData();
+  }, [fetchProfileData]);
+
+  // Listen for activity logged events (real-time updates)
+  useEffect(() => {
+    const handleActivityLogged = (event) => {
+      // Refresh profile data when activity is logged
+      fetchProfileData();
+      
+      // Also refresh user data in AuthContext
+      if (refreshUser) {
+        refreshUser();
+      }
+    };
+
+    window.addEventListener('activityLogged', handleActivityLogged);
+    return () => window.removeEventListener('activityLogged', handleActivityLogged);
+  }, [fetchProfileData, refreshUser]);
+
+  // Update when user changes
+  useEffect(() => {
+    if (user) {
+      setProfileData(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        totalPoints: user.total_points || prev.totalPoints,
+        co2Saved: user.total_co2_saved || prev.co2Saved,
+        currentStreak: user.current_streak || prev.currentStreak,
+        level: Math.floor((user.total_points || 0) / 500) + 1,
+      }));
+    }
+  }, [user]);
 
   const colors = {
     bg: {
@@ -166,25 +334,27 @@ const Profile = () => {
           {/* Profile Header */}
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 mb-8 text-white">
             <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-4xl font-bold">
-                {profileData.name.charAt(0)}
+              <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-4xl font-bold shadow-lg">
+                {profileData.name.charAt(0).toUpperCase()}
               </div>
               <div className="text-center md:text-left flex-1">
                 <h2 className="text-2xl font-bold">{profileData.name}</h2>
                 <p className="text-emerald-100">{profileData.email}</p>
-                <p className="text-sm text-emerald-200 mt-1">Member since {profileData.joinDate}</p>
+                <p className="text-sm text-emerald-200 mt-1">
+                  {profileData.joinDate !== 'Member' ? `Member since ${profileData.joinDate}` : 'Member'} • Level {profileData.level}
+                </p>
               </div>
               <div className="grid grid-cols-3 gap-6 text-center">
-                <div>
-                  <div className="text-2xl font-bold">{profileData.totalPoints}</div>
+                <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{profileData.totalPoints.toLocaleString()}</div>
                   <div className="text-xs text-emerald-200">Points</div>
                 </div>
-                <div>
-                  <div className="text-2xl font-bold">#{profileData.rank}</div>
+                <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{profileData.rank > 0 ? `#${profileData.rank}` : '-'}</div>
                   <div className="text-xs text-emerald-200">Rank</div>
                 </div>
-                <div>
-                  <div className="text-2xl font-bold">{profileData.co2Saved}kg</div>
+                <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{profileData.co2Saved.toFixed(1)}kg</div>
                   <div className="text-xs text-emerald-200">CO₂ Saved</div>
                 </div>
               </div>
@@ -211,31 +381,44 @@ const Profile = () => {
           {/* Tab Content */}
           {activeTab === 'overview' && (
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { label: 'Activities Logged', value: profileData.activitiesLogged, icon: '📝' },
-                { label: 'Current Streak', value: `${profileData.currentStreak} days`, icon: '🔥' },
-                { label: 'Longest Streak', value: `${profileData.longestStreak} days`, icon: '⭐' },
-                { label: 'Level', value: profileData.level, icon: '🎯' },
-              ].map((stat, i) => (
-                <div key={i} className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-5 ${isDark ? '' : 'shadow-sm'}`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={`${colors.text.secondary} text-sm`}>{stat.label}</span>
-                    <span className="text-xl">{stat.icon}</span>
+              {loading ? (
+                [...Array(4)].map((_, i) => (
+                  <div key={i} className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-5 animate-pulse ${isDark ? '' : 'shadow-sm'}`}>
+                    <div className={`h-4 ${isDark ? 'bg-[#162019]' : 'bg-emerald-100'} rounded w-1/2 mb-4`}></div>
+                    <div className={`h-8 ${isDark ? 'bg-[#162019]' : 'bg-emerald-100'} rounded w-1/3`}></div>
                   </div>
-                  <div className={`text-2xl font-bold ${colors.text.primary}`}>{stat.value}</div>
-                </div>
-              ))}
+                ))
+              ) : (
+                [
+                  { label: 'Activities Logged', value: profileData.activitiesLogged.toLocaleString(), icon: '📝' },
+                  { label: 'Current Streak', value: `${profileData.currentStreak} days`, icon: '🔥' },
+                  { label: 'Longest Streak', value: `${profileData.longestStreak} days`, icon: '⭐' },
+                  { label: 'Level', value: profileData.level, icon: '🎯' },
+                ].map((stat, i) => (
+                  <div key={i} className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-5 hover:scale-105 transition-transform duration-300 ${isDark ? '' : 'shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className={`${colors.text.secondary} text-sm`}>{stat.label}</span>
+                      <span className="text-xl">{stat.icon}</span>
+                    </div>
+                    <div className={`text-2xl font-bold ${colors.text.primary}`}>{stat.value}</div>
+                  </div>
+                ))
+              )}
             </div>
           )}
 
           {activeTab === 'badges' && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {badges.map((badge) => (
-                <div key={badge.id} className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-4 text-center ${!badge.earned ? 'opacity-50' : ''} ${isDark ? '' : 'shadow-sm'}`}>
-                  <div className="text-4xl mb-2">{badge.icon}</div>
+                <div key={badge.id} className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-4 text-center transition-all duration-300 ${!badge.earned ? 'opacity-50 grayscale' : 'hover:scale-105 hover:shadow-lg hover:shadow-emerald-500/20'} ${isDark ? '' : 'shadow-sm'}`}>
+                  <div className={`text-4xl mb-2 ${badge.earned ? '' : 'filter blur-[1px]'}`}>{badge.icon}</div>
                   <h3 className={`font-medium ${colors.text.primary}`}>{badge.name}</h3>
                   <p className={`text-xs ${colors.text.secondary} mt-1`}>{badge.description}</p>
-                  {badge.earned && <span className="inline-block mt-2 text-xs text-emerald-500">✓ Earned</span>}
+                  {badge.earned ? (
+                    <span className="inline-block mt-2 text-xs text-emerald-500 font-medium">✓ Earned</span>
+                  ) : (
+                    <span className="inline-block mt-2 text-xs text-gray-500">🔒 Locked</span>
+                  )}
                 </div>
               ))}
             </div>
@@ -243,20 +426,43 @@ const Profile = () => {
 
           {activeTab === 'activity' && (
             <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-6 ${isDark ? '' : 'shadow-sm'}`}>
-              <div className="space-y-3">
-                {recentActivities.map((activity) => (
-                  <div key={activity.id} className={`flex items-center gap-4 p-3 rounded-lg ${isDark ? 'hover:bg-[#162019]' : 'hover:bg-emerald-50'} transition-colors`}>
-                    <div className={`w-10 h-10 ${isDark ? 'bg-[#162019]' : 'bg-emerald-100'} rounded-lg flex items-center justify-center text-xl`}>
-                      {activity.icon}
+              {loading ? (
+                <div className="space-y-3">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="animate-pulse flex gap-4">
+                      <div className={`w-10 h-10 ${isDark ? 'bg-[#162019]' : 'bg-emerald-100'} rounded-lg`}></div>
+                      <div className="flex-1">
+                        <div className={`h-4 ${isDark ? 'bg-[#162019]' : 'bg-emerald-100'} rounded w-3/4 mb-2`}></div>
+                        <div className={`h-3 ${isDark ? 'bg-[#162019]' : 'bg-emerald-100'} rounded w-1/2`}></div>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className={`font-medium ${colors.text.primary}`}>{activity.description}</p>
-                      <p className={`text-sm ${colors.text.secondary}`}>{activity.date}</p>
+                  ))}
+                </div>
+              ) : recentActivities.length === 0 ? (
+                <div className={`text-center py-12 ${colors.text.secondary}`}>
+                  <span className="text-5xl mb-4 block">🌱</span>
+                  <p className="text-lg font-medium mb-2">No activities yet</p>
+                  <p className="text-sm mb-4">Start logging your eco-friendly activities!</p>
+                  <Link to="/log-activity" className="inline-block px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-medium hover:from-emerald-600 hover:to-teal-600 transition-all">
+                    Log Activity
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {recentActivities.map((activity) => (
+                    <div key={activity.id} className={`flex items-center gap-4 p-3 rounded-lg ${isDark ? 'hover:bg-[#162019]' : 'hover:bg-emerald-50'} transition-colors`}>
+                      <div className={`w-10 h-10 ${isDark ? 'bg-[#162019]' : 'bg-emerald-100'} rounded-lg flex items-center justify-center text-xl`}>
+                        {activity.icon}
+                      </div>
+                      <div className="flex-1">
+                        <p className={`font-medium ${colors.text.primary}`}>{activity.description}</p>
+                        <p className={`text-sm ${colors.text.secondary}`}>{activity.date}</p>
+                      </div>
+                      <span className="text-emerald-500 font-medium">+{activity.points} pts</span>
                     </div>
-                    <span className="text-emerald-500 font-medium">+{activity.points} pts</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

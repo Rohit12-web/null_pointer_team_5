@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import activityService from '../services/activityService';
 
 const Leaderboard = () => {
   const { user, logout } = useAuth();
@@ -11,6 +12,17 @@ const Leaderboard = () => {
   const [timeFilter, setTimeFilter] = useState('weekly');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [currentUserRank, setCurrentUserRank] = useState({
+    rank: 0,
+    name: user?.name || 'You',
+    points: 0,
+    co2Saved: 0,
+    streak: 0,
+    avatar: user?.name?.charAt(0) || 'U',
+    change: 0
+  });
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
@@ -21,20 +33,92 @@ const Leaderboard = () => {
     { path: '/profile', label: 'Profile', icon: '👤' },
   ];
 
-  const leaderboardData = [
-    { rank: 1, name: 'Emma Green', points: 4520, co2Saved: 245.6, streak: 45, avatar: 'E', change: 0 },
-    { rank: 2, name: 'Alex Rivers', points: 4280, co2Saved: 231.2, streak: 38, avatar: 'A', change: 1 },
-    { rank: 3, name: 'Sam Forest', points: 4150, co2Saved: 218.9, streak: 42, avatar: 'S', change: -1 },
-    { rank: 4, name: 'Jordan Leaf', points: 3890, co2Saved: 198.4, streak: 28, avatar: 'J', change: 2 },
-    { rank: 5, name: 'Taylor Woods', points: 3720, co2Saved: 187.3, streak: 35, avatar: 'T', change: 0 },
-    { rank: 6, name: 'Morgan Earth', points: 3580, co2Saved: 176.8, streak: 22, avatar: 'M', change: -2 },
-    { rank: 7, name: 'Casey Nature', points: 3420, co2Saved: 165.2, streak: 19, avatar: 'C', change: 1 },
-    { rank: 8, name: 'Riley Eco', points: 3280, co2Saved: 154.7, streak: 25, avatar: 'R', change: 0 },
-    { rank: 9, name: 'Quinn Solar', points: 3150, co2Saved: 143.9, streak: 17, avatar: 'Q', change: 3 },
-    { rank: 10, name: 'Avery Wind', points: 2980, co2Saved: 132.4, streak: 14, avatar: 'A', change: -1 },
-  ];
+  // Fetch leaderboard data from API
+  const fetchLeaderboardData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await activityService.getLeaderboard('total_points', 50);
+      
+      if (response.leaderboard) {
+        const formattedData = response.leaderboard.map((item) => ({
+          rank: item.rank,
+          id: item.id,
+          name: item.name,
+          points: item.total_points || 0,
+          co2Saved: item.total_co2_saved || 0,
+          streak: item.current_streak || 0,
+          avatar: item.name?.charAt(0).toUpperCase() || 'U',
+          change: Math.floor(Math.random() * 5) - 2, // Random change for now
+        }));
+        setLeaderboardData(formattedData);
+        
+        // Find current user's rank
+        if (user) {
+          const userIndex = formattedData.findIndex(item => item.id === user.id);
+          if (userIndex !== -1) {
+            setCurrentUserRank({
+              ...formattedData[userIndex],
+              change: Math.floor(Math.random() * 10),
+            });
+          } else {
+            // User not in top 50, calculate approximate rank
+            setCurrentUserRank({
+              rank: formattedData.length + 1,
+              name: user.name || 'You',
+              points: user.total_points || 0,
+              co2Saved: user.total_co2_saved || 0,
+              streak: user.current_streak || 0,
+              avatar: user.name?.charAt(0).toUpperCase() || 'U',
+              change: 0,
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
-  const currentUserRank = { rank: 42, name: user?.name || 'You', points: 2450, co2Saved: 156.8, streak: 7, avatar: user?.name?.charAt(0) || 'U', change: 5 };
+  // Initial data fetch
+  useEffect(() => {
+    fetchLeaderboardData();
+  }, [fetchLeaderboardData]);
+
+  // Listen for activity logged events (real-time updates)
+  useEffect(() => {
+    const handleActivityLogged = () => {
+      // Refresh leaderboard when any activity is logged
+      fetchLeaderboardData();
+    };
+
+    window.addEventListener('activityLogged', handleActivityLogged);
+    return () => window.removeEventListener('activityLogged', handleActivityLogged);
+  }, [fetchLeaderboardData]);
+
+  // Update current user rank when user data changes
+  useEffect(() => {
+    if (user && leaderboardData.length > 0) {
+      const userIndex = leaderboardData.findIndex(item => item.id === user.id);
+      if (userIndex !== -1) {
+        setCurrentUserRank({
+          ...leaderboardData[userIndex],
+          change: Math.floor(Math.random() * 10),
+        });
+      } else {
+        setCurrentUserRank({
+          rank: leaderboardData.length + 1,
+          name: user.name || 'You',
+          points: user.total_points || 0,
+          co2Saved: user.total_co2_saved || 0,
+          streak: user.current_streak || 0,
+          avatar: user.name?.charAt(0).toUpperCase() || 'U',
+          change: 0,
+        });
+      }
+    }
+  }, [user, leaderboardData]);
 
   const colors = {
     bg: {
@@ -169,105 +253,150 @@ const Leaderboard = () => {
         </header>
 
         <div className="p-4 lg:p-8">
-          {/* Top 3 Podium */}
-          <div className="flex justify-center items-end gap-4 mb-8">
-            {/* 2nd Place */}
-            <div className="text-center">
-              <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-xl font-bold text-gray-800 mb-2`}>
-                {leaderboardData[1].avatar}
+          {loading ? (
+            // Loading skeleton
+            <div className="animate-pulse">
+              <div className="flex justify-center items-end gap-4 mb-8">
+                <div className={`w-32 h-40 ${isDark ? 'bg-[#1f2d24]' : 'bg-emerald-100'} rounded-xl`}></div>
+                <div className={`w-32 h-48 ${isDark ? 'bg-[#1f2d24]' : 'bg-emerald-100'} rounded-xl`}></div>
+                <div className={`w-32 h-36 ${isDark ? 'bg-[#1f2d24]' : 'bg-emerald-100'} rounded-xl`}></div>
               </div>
-              <div className={`${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border} rounded-xl p-4 ${isDark ? '' : 'shadow-sm'}`} style={{ height: '120px' }}>
-                <div className="text-2xl mb-1">🥈</div>
-                <p className={`font-medium ${colors.text.primary} text-sm truncate`}>{leaderboardData[1].name}</p>
-                <p className="text-emerald-500 font-bold">{leaderboardData[1].points.toLocaleString()}</p>
-              </div>
-            </div>
-
-            {/* 1st Place */}
-            <div className="text-center -mt-4">
-              <div className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-2xl font-bold text-white mb-2 shadow-lg shadow-yellow-500/30`}>
-                {leaderboardData[0].avatar}
-              </div>
-              <div className={`${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border} rounded-xl p-4 ${isDark ? '' : 'shadow-sm'}`} style={{ height: '140px' }}>
-                <div className="text-3xl mb-1">🥇</div>
-                <p className={`font-medium ${colors.text.primary} truncate`}>{leaderboardData[0].name}</p>
-                <p className="text-emerald-500 font-bold text-lg">{leaderboardData[0].points.toLocaleString()}</p>
+              <div className={`h-20 ${isDark ? 'bg-[#1f2d24]' : 'bg-emerald-100'} rounded-xl mb-6`}></div>
+              <div className={`space-y-3`}>
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className={`h-16 ${isDark ? 'bg-[#1f2d24]' : 'bg-emerald-100'} rounded-xl`}></div>
+                ))}
               </div>
             </div>
-
-            {/* 3rd Place */}
-            <div className="text-center">
-              <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-amber-600 to-amber-700 flex items-center justify-center text-xl font-bold text-white mb-2`}>
-                {leaderboardData[2].avatar}
-              </div>
-              <div className={`${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border} rounded-xl p-4 ${isDark ? '' : 'shadow-sm'}`} style={{ height: '100px' }}>
-                <div className="text-2xl mb-1">🥉</div>
-                <p className={`font-medium ${colors.text.primary} text-sm truncate`}>{leaderboardData[2].name}</p>
-                <p className="text-emerald-500 font-bold">{leaderboardData[2].points.toLocaleString()}</p>
-              </div>
+          ) : leaderboardData.length === 0 ? (
+            // Empty state
+            <div className={`text-center py-16 ${colors.text.secondary}`}>
+              <span className="text-6xl mb-4 block">🏆</span>
+              <h3 className={`text-xl font-semibold ${colors.text.primary} mb-2`}>No rankings yet</h3>
+              <p className="text-sm mb-4">Be the first to log an activity and claim the top spot!</p>
+              <Link 
+                to="/log-activity" 
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-medium hover:from-emerald-400 hover:to-teal-400 transition-all"
+              >
+                <span>➕</span>
+                <span>Log Your First Activity</span>
+              </Link>
             </div>
-          </div>
-
-          {/* Your Rank Card */}
-          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-4 mb-6 text-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold">
-                  {currentUserRank.avatar}
-                </div>
-                <div>
-                  <p className="font-medium">{currentUserRank.name}</p>
-                  <p className="text-sm text-emerald-100">Your current position</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold">#{currentUserRank.rank}</div>
-                <div className="text-sm text-emerald-100 flex items-center gap-1">
-                  <span className="text-green-300">↑{currentUserRank.change}</span> this week
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Leaderboard Table */}
-          <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl overflow-hidden ${isDark ? '' : 'shadow-sm'}`}>
-            <div className={`grid grid-cols-12 gap-4 p-4 border-b ${colors.border} ${colors.text.secondary} text-sm font-medium`}>
-              <div className="col-span-1">Rank</div>
-              <div className="col-span-5">User</div>
-              <div className="col-span-2 text-right">Points</div>
-              <div className="col-span-2 text-right hidden sm:block">CO₂ Saved</div>
-              <div className="col-span-2 text-right">Streak</div>
-            </div>
-            
-            {leaderboardData.slice(3).map((user, index) => (
-              <div key={user.rank} className={`grid grid-cols-12 gap-4 p-4 items-center ${isDark ? 'hover:bg-[#162019]' : 'hover:bg-emerald-50'} transition-colors border-b ${colors.border} last:border-b-0`}>
-                <div className="col-span-1">
-                  <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-medium ${getRankStyle(user.rank)}`}>
-                    {user.rank}
-                  </span>
-                </div>
-                <div className="col-span-5 flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full ${isDark ? 'bg-[#162019]' : 'bg-emerald-100'} flex items-center justify-center font-medium ${colors.text.primary}`}>
-                    {user.avatar}
+          ) : (
+            <>
+              {/* Top 3 Podium */}
+              <div className="flex justify-center items-end gap-4 mb-8">
+                {/* 2nd Place */}
+                {leaderboardData[1] && (
+                  <div className="text-center">
+                    <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-xl font-bold text-gray-800 mb-2`}>
+                      {leaderboardData[1].avatar}
+                    </div>
+                    <div className={`${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border} rounded-xl p-4 ${isDark ? '' : 'shadow-sm'}`} style={{ height: '120px' }}>
+                      <div className="text-2xl mb-1">🥈</div>
+                      <p className={`font-medium ${colors.text.primary} text-sm truncate`}>{leaderboardData[1].name}</p>
+                      <p className="text-emerald-500 font-bold">{leaderboardData[1].points.toLocaleString()}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className={`font-medium ${colors.text.primary}`}>{user.name}</p>
-                    <p className={`text-xs ${colors.text.secondary}`}>
-                      {user.change > 0 ? <span className="text-green-500">↑{user.change}</span> : user.change < 0 ? <span className="text-red-500">↓{Math.abs(user.change)}</span> : <span>-</span>}
-                    </p>
+                )}
+
+                {/* 1st Place */}
+                {leaderboardData[0] && (
+                  <div className="text-center -mt-4">
+                    <div className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-2xl font-bold text-white mb-2 shadow-lg shadow-yellow-500/30`}>
+                      {leaderboardData[0].avatar}
+                    </div>
+                    <div className={`${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border} rounded-xl p-4 ${isDark ? '' : 'shadow-sm'}`} style={{ height: '140px' }}>
+                      <div className="text-3xl mb-1">🥇</div>
+                      <p className={`font-medium ${colors.text.primary} truncate`}>{leaderboardData[0].name}</p>
+                      <p className="text-emerald-500 font-bold text-lg">{leaderboardData[0].points.toLocaleString()}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3rd Place */}
+                {leaderboardData[2] && (
+                  <div className="text-center">
+                    <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-amber-600 to-amber-700 flex items-center justify-center text-xl font-bold text-white mb-2`}>
+                      {leaderboardData[2].avatar}
+                    </div>
+                    <div className={`${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border} rounded-xl p-4 ${isDark ? '' : 'shadow-sm'}`} style={{ height: '100px' }}>
+                      <div className="text-2xl mb-1">🥉</div>
+                      <p className={`font-medium ${colors.text.primary} text-sm truncate`}>{leaderboardData[2].name}</p>
+                      <p className="text-emerald-500 font-bold">{leaderboardData[2].points.toLocaleString()}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Your Rank Card */}
+              <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-4 mb-6 text-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold">
+                      {currentUserRank.avatar}
+                    </div>
+                    <div>
+                      <p className="font-medium">{currentUserRank.name}</p>
+                      <p className="text-sm text-emerald-100">Your current position</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold">#{currentUserRank.rank}</div>
+                    <div className="text-sm text-emerald-100 flex items-center gap-1">
+                      {currentUserRank.points > 0 ? (
+                        <>
+                          <span className="text-green-300">{currentUserRank.points.toLocaleString()}</span> points
+                        </>
+                      ) : (
+                        <span>Start logging activities!</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className={`col-span-2 text-right font-bold ${colors.text.primary}`}>{user.points.toLocaleString()}</div>
-                <div className={`col-span-2 text-right hidden sm:block ${colors.text.secondary}`}>{user.co2Saved} kg</div>
-                <div className="col-span-2 text-right">
-                  <span className="inline-flex items-center gap-1">
-                    <span>🔥</span>
-                    <span className={colors.text.primary}>{user.streak}</span>
-                  </span>
-                </div>
               </div>
-            ))}
-          </div>
+
+              {/* Leaderboard Table */}
+              <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl overflow-hidden ${isDark ? '' : 'shadow-sm'}`}>
+                <div className={`grid grid-cols-12 gap-4 p-4 border-b ${colors.border} ${colors.text.secondary} text-sm font-medium`}>
+                  <div className="col-span-1">Rank</div>
+                  <div className="col-span-5">User</div>
+                  <div className="col-span-2 text-right">Points</div>
+                  <div className="col-span-2 text-right hidden sm:block">CO₂ Saved</div>
+                  <div className="col-span-2 text-right">Streak</div>
+                </div>
+                
+                {leaderboardData.slice(3).map((user, index) => (
+                  <div key={user.rank || index} className={`grid grid-cols-12 gap-4 p-4 items-center ${isDark ? 'hover:bg-[#162019]' : 'hover:bg-emerald-50'} transition-colors border-b ${colors.border} last:border-b-0`}>
+                    <div className="col-span-1">
+                      <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-medium ${getRankStyle(user.rank)}`}>
+                        {user.rank}
+                      </span>
+                    </div>
+                    <div className="col-span-5 flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full ${isDark ? 'bg-[#162019]' : 'bg-emerald-100'} flex items-center justify-center font-medium ${colors.text.primary}`}>
+                        {user.avatar}
+                      </div>
+                      <div>
+                        <p className={`font-medium ${colors.text.primary}`}>{user.name}</p>
+                        <p className={`text-xs ${colors.text.secondary}`}>
+                          {user.change > 0 ? <span className="text-green-500">↑{user.change}</span> : user.change < 0 ? <span className="text-red-500">↓{Math.abs(user.change)}</span> : <span>-</span>}
+                        </p>
+                      </div>
+                    </div>
+                    <div className={`col-span-2 text-right font-bold ${colors.text.primary}`}>{user.points.toLocaleString()}</div>
+                    <div className={`col-span-2 text-right hidden sm:block ${colors.text.secondary}`}>{typeof user.co2Saved === 'number' ? user.co2Saved.toFixed(1) : user.co2Saved} kg</div>
+                    <div className="col-span-2 text-right">
+                      <span className="inline-flex items-center gap-1">
+                        <span>🔥</span>
+                        <span className={colors.text.primary}>{user.streak}</span>
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </main>
     </div>

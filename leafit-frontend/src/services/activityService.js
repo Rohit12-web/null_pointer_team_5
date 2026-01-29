@@ -15,6 +15,7 @@ export const activityService = {
       quantity: parseFloat(activityData.quantity),
       unit: activityData.unit,
       notes: activityData.notes || '',
+      activity_date: activityData.date || null,  // Send the selected date
     });
   },
   

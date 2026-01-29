@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated, error: authError, clearError } = useAuth();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -14,20 +14,6 @@ const Login = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
-
-  // Clear auth errors when component unmounts
-  useEffect(() => {
-    return () => {
-      if (clearError) clearError();
-    };
-  }, [clearError]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -35,42 +21,23 @@ const Login = () => {
 
     try {
       const result = await login(formData.email, formData.password);
-      
       if (result.success) {
-        // Store remember me preference
-        if (rememberMe) {
-          localStorage.setItem('leafit_remember_email', formData.email);
-        } else {
-          localStorage.removeItem('leafit_remember_email');
-        }
         navigate('/dashboard');
       } else {
         setError(result.error || 'Invalid email or password. Please try again.');
       }
     } catch (err) {
-      setError(err.message || 'Invalid email or password. Please try again.');
+      setError('Invalid email or password. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Load remembered email on mount
-  useEffect(() => {
-    const rememberedEmail = localStorage.getItem('leafit_remember_email');
-    if (rememberedEmail) {
-      setFormData(prev => ({ ...prev, email: rememberedEmail }));
-      setRememberMe(true);
-    }
-  }, []);
-
   return (
     <div className="h-screen bg-[#050505] flex items-center justify-center p-8 overflow-hidden">
-      <div className="w-full max-w-5xl h-[90vh] rounded-3xl shadow-2xl flex overflow-hidden">
+      <div className="w-full max-w-5xl h-[90vh] bg-[#0a0a0a]/90 backdrop-blur-sm rounded-3xl border border-white/5 shadow-2xl flex overflow-hidden">
         {/* Left Side - Dark Form */}
-        <div className="w-full lg:w-1/2 bg-gradient-to-br from-[#0d1117] via-[#161b22] to-[#0d1117] flex flex-col justify-center px-10 lg:px-14 py-8 border border-white/10 rounded-l-3xl relative">
-          {/* Subtle glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-emerald-900/10 via-transparent to-transparent rounded-l-3xl pointer-events-none"></div>
-          <div className="relative z-10">
+        <div className="w-full lg:w-1/2 bg-[#111111]/80 flex flex-col justify-center px-10 lg:px-14 py-8">
         {/* Logo */}
         <Link to="/" className="inline-flex items-center space-x-2 mb-3">
           <span className="text-2xl">🌿</span>
@@ -99,7 +66,7 @@ const Login = () => {
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full pl-10 pr-4 py-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
+              className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-full text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
               placeholder="Enter your username/email"
               required
             />
@@ -116,7 +83,7 @@ const Login = () => {
               type={showPassword ? 'text' : 'password'}
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full pl-10 pr-10 py-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
+              className="w-full pl-10 pr-10 py-3 bg-gray-800/50 border border-gray-700 rounded-full text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
               placeholder="Enter your password"
               required
             />
@@ -145,7 +112,7 @@ const Login = () => {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0"
+                className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0"
               />
               <span className="text-gray-400 text-sm">Remember</span>
             </label>
@@ -185,44 +152,74 @@ const Login = () => {
             Create an account
           </Link>
         </p>
-          </div>
       </div>
 
-      {/* Right Side - Green Gradient with Earth/Nature Theme */}
-      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-emerald-300 via-green-400 to-teal-500 flex-col items-center justify-center p-8 relative overflow-hidden rounded-r-3xl shadow-[-10px_0_30px_rgba(0,0,0,0.3)]">
-        {/* Decorative circles */}
-        <div className="absolute top-20 right-20 w-32 h-32 bg-white/10 rounded-full blur-xl" />
-        <div className="absolute bottom-32 left-16 w-24 h-24 bg-white/10 rounded-full blur-xl" />
+      {/* Right Side - Dark Theme with Earth Image */}
+      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-[#0d1f1a] via-[#0a1612] to-[#050505] flex-col items-center justify-center p-8 relative overflow-hidden rounded-r-3xl">
+        {/* Decorative glowing circles */}
+        <div className="absolute top-20 right-20 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-32 left-16 w-32 h-32 bg-teal-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-emerald-400/5 rounded-full blur-3xl" />
         
         {/* Welcome Text */}
-        <h2 className="text-4xl font-serif italic text-gray-800 mb-1">Welcome</h2>
-        <h3 className="text-2xl font-semibold text-gray-800 mb-4">to LeafIt</h3>
+        <h2 className="text-4xl font-serif italic text-emerald-400 mb-1 z-10">Welcome</h2>
+        <h3 className="text-2xl font-semibold text-white mb-6 z-10">to LeafIt</h3>
+        
+        {/* Earth Recycle Image */}
+        <div className="relative z-10 mb-6">
+          <div className="w-48 h-48 relative">
+            {/* Glowing ring behind earth */}
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 via-teal-400/20 to-emerald-400/20 rounded-full blur-xl animate-pulse" />
+            
+            {/* Earth SVG */}
+            <svg viewBox="0 0 512 512" className="w-full h-full drop-shadow-2xl">
+              {/* Background circle */}
+              <circle cx="256" cy="256" r="200" fill="#87CEEB" stroke="#4A90D9" strokeWidth="8"/>
+              
+              {/* Continents */}
+              <path d="M180 120 Q200 100 240 110 Q280 120 300 150 Q310 180 290 200 Q260 210 230 190 Q200 170 180 140 Q170 120 180 120" fill="#7EC850"/>
+              <path d="M320 180 Q360 170 380 200 Q400 240 380 280 Q350 300 320 280 Q300 250 310 220 Q315 190 320 180" fill="#7EC850"/>
+              <path d="M140 220 Q160 200 200 210 Q230 230 220 270 Q200 300 160 290 Q130 270 140 220" fill="#7EC850"/>
+              <path d="M250 280 Q290 270 320 300 Q340 340 310 370 Q270 390 240 360 Q220 320 250 280" fill="#7EC850"/>
+              <path d="M160 340 Q190 320 220 340 Q240 370 210 400 Q170 410 150 380 Q145 355 160 340" fill="#7EC850"/>
+              
+              {/* Recycling arrows */}
+              <g transform="translate(256, 256)">
+                {/* Arrow 1 - Top */}
+                <path d="M-20 -160 L0 -190 L20 -160 L5 -160 L5 -120 L-5 -120 L-5 -160 Z" fill="#4A90D9" transform="rotate(0)">
+                  <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="8s" repeatCount="indefinite"/>
+                </path>
+                {/* Arrow 2 - Bottom Right */}
+                <path d="M-20 -160 L0 -190 L20 -160 L5 -160 L5 -120 L-5 -120 L-5 -160 Z" fill="#4A90D9" transform="rotate(120)">
+                  <animateTransform attributeName="transform" type="rotate" from="120" to="480" dur="8s" repeatCount="indefinite"/>
+                </path>
+                {/* Arrow 3 - Bottom Left */}
+                <path d="M-20 -160 L0 -190 L20 -160 L5 -160 L5 -120 L-5 -120 L-5 -160 Z" fill="#4A90D9" transform="rotate(240)">
+                  <animateTransform attributeName="transform" type="rotate" from="240" to="600" dur="8s" repeatCount="indefinite"/>
+                </path>
+              </g>
+              
+              {/* Curved arrows around earth */}
+              <path d="M80 256 Q80 150 180 100" fill="none" stroke="#4A90D9" strokeWidth="12" strokeLinecap="round"/>
+              <path d="M180 100 L165 130 M180 100 L150 105" stroke="#4A90D9" strokeWidth="12" strokeLinecap="round"/>
+              
+              <path d="M432 256 Q432 362 332 412" fill="none" stroke="#4A90D9" strokeWidth="12" strokeLinecap="round"/>
+              <path d="M332 412 L347 382 M332 412 L362 407" stroke="#4A90D9" strokeWidth="12" strokeLinecap="round"/>
+            </svg>
+          </div>
+        </div>
         
         {/* Description */}
-        <p className="text-gray-700 text-center max-w-sm mb-6 leading-relaxed text-sm">
-          Discover where sustainability begins. Our dedicated platform helps you track eco-friendly actions and reduce your carbon footprint. Join us for an inspiring green journey!
+        <p className="text-gray-400 text-center max-w-xs leading-relaxed text-sm z-10">
+          Track your eco-friendly actions and reduce your carbon footprint. Join the sustainability movement!
         </p>
 
-        {/* Earth and Nature Illustration */}
-        <div className="relative">
-          {/* Main Earth */}
-          <div className="text-[100px]">🌍</div>
-          
-          {/* Surrounding elements */}
-          <div className="absolute -top-2 -left-6 text-3xl">🌱</div>
-          <div className="absolute -top-1 -right-4 text-2xl">🌿</div>
-          <div className="absolute -bottom-1 -left-8 text-2xl">🍃</div>
-          <div className="absolute -bottom-2 -right-6 text-3xl">☘️</div>
-          <div className="absolute top-1/2 -left-10 text-xl">🌳</div>
-          <div className="absolute top-1/2 -right-8 text-xl">🌲</div>
-        </div>
-
         {/* Dots indicator */}
-        <div className="flex items-center space-x-2 mt-8">
-          <div className="w-3 h-3 bg-white rounded-full" />
-          <div className="w-2 h-2 bg-white/50 rounded-full" />
-          <div className="w-2 h-2 bg-white/50 rounded-full" />
-          <div className="w-2 h-2 bg-white/50 rounded-full" />
+        <div className="flex items-center space-x-2 mt-8 z-10">
+          <div className="w-3 h-3 bg-emerald-400 rounded-full" />
+          <div className="w-2 h-2 bg-emerald-400/30 rounded-full" />
+          <div className="w-2 h-2 bg-emerald-400/30 rounded-full" />
+          <div className="w-2 h-2 bg-emerald-400/30 rounded-full" />
         </div>
       </div>
       </div>

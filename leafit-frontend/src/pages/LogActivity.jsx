@@ -154,6 +154,7 @@ const LogActivity = () => {
         quantity: formData.quantity,
         unit: formData.unit,
         notes: formData.description,
+        date: formData.date,  // Include the selected date
       };
       
       const response = await activityService.logActivity(activityData);
@@ -190,7 +191,7 @@ const LogActivity = () => {
       }, 3000);
     } catch (err) {
       console.error('Error logging activity:', err);
-      setError(err.response?.data?.error || 'Failed to log activity. Please try again.');
+      setError(err.error || err.errors?.non_field_errors?.[0] || 'Failed to log activity. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

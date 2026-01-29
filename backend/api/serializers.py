@@ -148,7 +148,21 @@ class UserActivityCreateSerializer(serializers.Serializer):
     activity_date = serializers.DateField(required=False)
     
     def create(self, validated_data):
+        from django.utils import timezone
+        from datetime import datetime
+        
         user = self.context['request_user']
+        
+        # Handle activity_date - convert date to datetime if provided
+        activity_date = validated_data.get('activity_date')
+        if activity_date:
+            # Convert date to datetime at noon
+            activity_datetime = timezone.make_aware(
+                datetime.combine(activity_date, datetime.min.time().replace(hour=12))
+            )
+        else:
+            activity_datetime = timezone.now()
+        
         activity = UserActivity.objects.create(
             user=user,
             activity_type=validated_data['activity_type'],
@@ -157,6 +171,7 @@ class UserActivityCreateSerializer(serializers.Serializer):
             quantity=validated_data['quantity'],
             unit=validated_data['unit'],
             notes=validated_data.get('notes', ''),
+            activity_date=activity_datetime,
         )
         return activity
 

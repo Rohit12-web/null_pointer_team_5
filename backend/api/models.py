@@ -132,7 +132,7 @@ class UserActivity(models.Model):
     quantity = models.FloatField(default=1)
     unit = models.CharField(max_length=50, default='times')
     notes = models.TextField(blank=True)
-    activity_date = models.DateTimeField(auto_now_add=True)
+    activity_date = models.DateTimeField(null=True, blank=True)  # Allow custom dates
     
     # Calculated impact
     points_earned = models.IntegerField(default=0)

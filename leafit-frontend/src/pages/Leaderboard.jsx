@@ -45,6 +45,7 @@ const Leaderboard = () => {
     { path: '/impact', label: 'My Impact', icon: Globe },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { path: '/badge-store', label: 'Badge Store', icon: Store },
+    { path: '/carbon-footprint', label: 'Carbon Footprint', icon: Leaf },
     { path: '/waste-classifier', label: 'Waste Classifier', icon: Recycle },
     { path: '/profile', label: 'Profile', icon: User },
   ];
@@ -383,7 +384,7 @@ const Leaderboard = () => {
                   <div className="col-span-2 text-right">Streak</div>
                 </div>
                 
-                {leaderboardData.slice(3).map((user, index) => (
+                {leaderboardData.map((user, index) => (
                   <div key={user.rank || index} className={`grid grid-cols-12 gap-4 p-4 items-center ${isDark ? 'hover:bg-[#162019]' : 'hover:bg-emerald-50'} transition-colors border-b ${colors.border} last:border-b-0`}>
                     <div className="col-span-1">
                       <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-medium ${getRankStyle(user.rank)}`}>

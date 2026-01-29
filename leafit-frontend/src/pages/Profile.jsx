@@ -52,6 +52,7 @@ const Profile = () => {
     { path: '/impact', label: 'My Impact', icon: Globe },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { path: '/badge-store', label: 'Badge Store', icon: Store },
+    { path: '/carbon-footprint', label: 'Carbon Footprint', icon: Leaf },
     { path: '/waste-classifier', label: 'Waste Classifier', icon: Recycle },
     { path: '/profile', label: 'Profile', icon: User },
   ];

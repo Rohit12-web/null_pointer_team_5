@@ -81,6 +81,7 @@ const Dashboard = () => {
     { path: '/impact', label: 'My Impact', icon: Globe },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { path: '/badge-store', label: 'Badge Store', icon: Store },
+    { path: '/carbon-footprint', label: 'Carbon Footprint', icon: Leaf },
     { path: '/waste-classifier', label: 'Waste Classifier', icon: Recycle },
     { path: '/profile', label: 'Profile', icon: User },
   ];
@@ -607,6 +608,36 @@ const Dashboard = () => {
               <p className={`text-sm ${colors.text.secondary} mt-2`}>{stats.wasteReduced > 0 ? 'Diverted from landfills' : 'Start recycling!'}</p>
             </div>
           </div>
+
+          {/* Carbon Footprint Monitor Card */}
+          <Link 
+            to="/carbon-footprint"
+            className={`block bg-gradient-to-br ${isDark ? 'from-purple-900/50 to-indigo-900/50' : 'from-purple-50 to-indigo-50'} border-2 ${isDark ? 'border-purple-700' : 'border-purple-300'} rounded-xl p-6 hover:shadow-lg transition-all mb-8 cursor-pointer hover:scale-[1.02]`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-3xl shadow-lg">
+                  📉
+                </div>
+                <div>
+                  <h3 className={`text-xl font-bold ${colors.text.primary}`}>Carbon Footprint Monitor</h3>
+                  <p className={`text-sm ${colors.text.secondary}`}>Track your carbon footprint reduction</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-3xl font-bold text-purple-600">
+                  {((parseFloat(stats.co2Saved) / 4000) * 100).toFixed(1)}%
+                </p>
+                <p className={`text-sm ${colors.text.secondary}`}>Reduction</p>
+              </div>
+            </div>
+            <div className={`mt-4 p-4 rounded-lg ${isDark ? 'bg-purple-500/10' : 'bg-purple-100'}`}>
+              <p className={`text-sm ${isDark ? 'text-purple-300' : 'text-purple-700'}`}>
+                <strong>Your estimated annual footprint:</strong> {(4000 - parseFloat(stats.co2Saved)).toFixed(0)} kg CO₂
+                <span className="ml-2">(Average: 4000 kg CO₂)</span>
+              </p>
+            </div>
+          </Link>
 
           {/* Quick Actions */}
           <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-6 ${isDark ? '' : 'shadow-sm'} mb-8`}>

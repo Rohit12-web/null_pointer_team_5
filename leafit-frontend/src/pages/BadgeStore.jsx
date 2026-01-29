@@ -187,6 +187,7 @@ const BadgeStore = () => {
     { path: '/impact', label: 'My Impact', icon: Globe },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { path: '/badge-store', label: 'Badge Store', icon: Store },
+    { path: '/carbon-footprint', label: 'Carbon Footprint', icon: Leaf },
     { path: '/waste-classifier', label: 'Waste Classifier', icon: Recycle },
     { path: '/profile', label: 'Profile', icon: User },
   ];
@@ -593,6 +594,44 @@ const BadgeStore = () => {
               </div>
             </div>
           </section>
+
+          {/* Carbon Footprint Monitor Link */}
+          <Link 
+            to="/carbon-footprint"
+            className={`block ${isDark ? 'bg-gradient-to-br from-purple-900/50 to-indigo-900/50' : 'bg-gradient-to-br from-purple-50 to-indigo-50'} border-2 ${isDark ? 'border-purple-700' : 'border-purple-300'} rounded-xl p-6 hover:shadow-xl transition-all cursor-pointer hover:scale-[1.02]`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-3xl shadow-lg">
+                  📉
+                </div>
+                <div>
+                  <h3 className={`text-lg font-bold ${colors.text.primary}`}>Carbon Footprint Monitor</h3>
+                  <p className={`text-sm ${colors.text.secondary}`}>Track your environmental impact in detail</p>
+                </div>
+              </div>
+              <div className="text-right hidden md:block">
+                <p className="text-2xl font-bold text-purple-600">
+                  {((userStats.totalCO2Saved / 4000) * 100).toFixed(1)}%
+                </p>
+                <p className={`text-xs ${colors.text.secondary}`}>Footprint Reduction</p>
+              </div>
+            </div>
+            <div className={`mt-4 grid grid-cols-3 gap-3`}>
+              <div className={`p-3 rounded-lg ${isDark ? 'bg-purple-500/10' : 'bg-purple-100'}`}>
+                <p className={`text-xs ${isDark ? 'text-purple-300' : 'text-purple-700'}`}>CO₂ Saved</p>
+                <p className={`text-lg font-bold ${isDark ? 'text-purple-200' : 'text-purple-800'}`}>{userStats.totalCO2Saved.toFixed(1)} kg</p>
+              </div>
+              <div className={`p-3 rounded-lg ${isDark ? 'bg-indigo-500/10' : 'bg-indigo-100'}`}>
+                <p className={`text-xs ${isDark ? 'text-indigo-300' : 'text-indigo-700'}`}>Trees Equiv.</p>
+                <p className={`text-lg font-bold ${isDark ? 'text-indigo-200' : 'text-indigo-800'}`}>{(userStats.totalCO2Saved / 21.77).toFixed(1)}</p>
+              </div>
+              <div className={`p-3 rounded-lg ${isDark ? 'bg-violet-500/10' : 'bg-violet-100'}`}>
+                <p className={`text-xs ${isDark ? 'text-violet-300' : 'text-violet-700'}`}>Your Footprint</p>
+                <p className={`text-lg font-bold ${isDark ? 'text-violet-200' : 'text-violet-800'}`}>{(4000 - userStats.totalCO2Saved).toFixed(0)} kg</p>
+              </div>
+            </div>
+          </Link>
 
           {/* Redeemed Coupons Section */}
           {redeemedCoupons.length > 0 && (

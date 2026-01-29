@@ -33,6 +33,11 @@ const Sidebar = () => {
       icon: '🏪',
     },
     {
+      path: '/carbon-footprint',
+      name: 'Carbon Footprint',
+      icon: '📉',
+    },
+    {
       path: '/profile',
       name: 'Profile',
       icon: '👤',

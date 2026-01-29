@@ -39,7 +39,7 @@ const LogActivity = () => {
     description: '',
     quantity: '',
     unit: '',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -53,6 +53,7 @@ const LogActivity = () => {
     { path: '/impact', label: 'My Impact', icon: Globe },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { path: '/badge-store', label: 'Badge Store', icon: Store },
+    { path: '/carbon-footprint', label: 'Carbon Footprint', icon: Leaf },
     { path: '/waste-classifier', label: 'Waste Classifier', icon: Recycle },
     { path: '/profile', label: 'Profile', icon: User },
   ];
@@ -450,7 +451,7 @@ const LogActivity = () => {
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    max={new Date().toISOString().split('T')[0]}
+                    max={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]}
                     className={`w-full px-4 py-3 ${isDark ? 'bg-[#162019]' : 'bg-white'} border ${isDark ? 'border-emerald-800/50' : 'border-emerald-200'} rounded-xl ${colors.text.primary} focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all`}
                     required
                   />

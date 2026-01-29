@@ -112,9 +112,16 @@ const Chatbot = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] h-[500px] max-h-[70vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp">
-          {/* Header */}
-          <div className="flex-shrink-0 bg-gradient-to-r from-green-600 to-green-500 px-4 py-4 flex items-center space-x-3">
+        <>
+          {/* Backdrop overlay - allows background scrolling */}
+          <div 
+            className="fixed inset-0 bg-black/20 z-40"
+            onClick={() => setIsOpen(false)}
+          />
+          
+          <div className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] h-[500px] max-h-[70vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp">
+            {/* Header */}
+            <div className="flex-shrink-0 bg-gradient-to-r from-green-600 to-green-500 px-4 py-4 flex items-center space-x-3">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
               <Sprout className="w-5 h-5 text-green-600" />
             </div>
@@ -131,8 +138,11 @@ const Chatbot = () => {
           {/* Messages Container */}
           <div 
             ref={messagesContainerRef}
-            className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 bg-gray-50"
-            style={{ overscrollBehavior: 'contain' }}
+            className="flex-1 overflow-y-scroll p-4 space-y-4 bg-gray-50"
+            style={{ 
+              overscrollBehavior: 'contain',
+              WebkitOverflowScrolling: 'touch'
+            }}
           >
             {messages.map((message) => (
               <div
@@ -213,7 +223,8 @@ const Chatbot = () => {
               </button>
             </div>
           </form>
-        </div>
+          </div>
+        </>
       )}
 
       {/* Custom CSS for animation */}

@@ -493,25 +493,6 @@ const Landing = () => {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="py-16 border-t border-emerald-900/50 bg-[#0d1210]">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-3">
-              <Leaf className="w-8 h-8 text-emerald-400" />
-              <span className="text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-300">LeafIt</span>
-            </div>
-            <div className="flex gap-8 text-[#6b8f7a] text-sm">
-              <Link to="/dashboard" className="hover:text-emerald-400 transition-colors">Dashboard</Link>
-              <Link to="/leaderboard" className="hover:text-emerald-400 transition-colors">Leaderboard</Link>
-              <Link to="/impact" className="hover:text-emerald-400 transition-colors">Impact</Link>
-              <Link to="/profile" className="hover:text-emerald-400 transition-colors">Profile</Link>
-            </div>
-            <p className="text-[#4a6b5c] text-sm">© 2026 LeafIt</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

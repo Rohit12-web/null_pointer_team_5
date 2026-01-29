@@ -3,6 +3,20 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import activityService from '../services/activityService';
+import {
+  LayoutDashboard,
+  PlusCircle,
+  Globe,
+  Trophy,
+  Store,
+  Recycle,
+  User,
+  Leaf,
+  Moon,
+  Sun,
+  LogOut,
+  Menu
+} from 'lucide-react';
 
 const Dashboard = () => {
   const { user, logout, refreshUser } = useAuth();
@@ -62,13 +76,13 @@ const Dashboard = () => {
   ];
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/log-activity', label: 'Log Activity', icon: '➕' },
-    { path: '/impact', label: 'My Impact', icon: '🌍' },
-    { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
-    { path: '/badge-store', label: 'Badge Store', icon: '🏪' },
-    { path: '/waste-classifier', label: 'Waste Classifier', icon: '♻️' },
-    { path: '/profile', label: 'Profile', icon: '👤' },
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/log-activity', label: 'Log Activity', icon: PlusCircle },
+    { path: '/impact', label: 'My Impact', icon: Globe },
+    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+    { path: '/badge-store', label: 'Badge Store', icon: Store },
+    { path: '/waste-classifier', label: 'Waste Classifier', icon: Recycle },
+    { path: '/profile', label: 'Profile', icon: User },
   ];
 
   // Activity type icons mapping
@@ -295,7 +309,7 @@ const Dashboard = () => {
         {/* Logo */}
         <div className={`h-16 flex items-center px-6 border-b ${colors.border}`}>
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🌿</span>
+            <Leaf className="w-6 h-6 text-emerald-500 dark:text-white" />
             <span className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">LeafIt</span>
           </Link>
         </div>
@@ -308,7 +322,9 @@ const Dashboard = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className={`text-sm font-medium ${colors.text.primary} truncate`}>{user?.name || 'User'}</p>
-              <p className={`text-xs ${colors.text.secondary}`}>🌱 {stats.totalPoints} pts</p>
+              <p className={`text-xs ${colors.text.secondary} flex items-center gap-1`}>
+                <Leaf className="w-3 h-3 dark:text-white" /> {stats.totalPoints} pts
+              </p>
             </div>
           </div>
         </div>
@@ -318,6 +334,7 @@ const Dashboard = () => {
           <ul className="space-y-1">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
+              const IconComponent = item.icon;
               return (
                 <li key={item.path}>
                   <Link
@@ -331,7 +348,7 @@ const Dashboard = () => {
                       }
                     `}
                   >
-                    <span className="text-lg">{item.icon}</span>
+                    <IconComponent className="w-5 h-5 dark:text-white" />
                     <span>{item.label}</span>
                   </Link>
                 </li>
@@ -347,7 +364,7 @@ const Dashboard = () => {
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'} transition-all`}
           >
             <div className="flex items-center gap-3">
-              <span className="text-lg">{isDark ? '🌙' : '☀️'}</span>
+              {isDark ? <Moon className="w-5 h-5 dark:text-white" /> : <Sun className="w-5 h-5 dark:text-white" />}
               <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
             </div>
             <div className={`w-10 h-5 rounded-full ${isDark ? 'bg-emerald-600' : 'bg-emerald-300'} relative transition-colors`}>
@@ -365,7 +382,7 @@ const Dashboard = () => {
             }}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} hover:text-red-500 ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-red-50'} transition-all`}
           >
-            <span className="text-lg">🚪</span>
+            <LogOut className="w-5 h-5 dark:text-white" />
             <span>Logout</span>
           </button>
         </div>

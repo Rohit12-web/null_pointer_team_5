@@ -170,13 +170,13 @@ export default function WasteClassifier() {
   const getCategoryIcon = (category) => {
     const cat = category?.toLowerCase() || '';
     if (cat.includes('biodegradable') || cat.includes('organic')) {
-      return <Leaf className="w-10 h-10" />;
+      return <Leaf className="w-10 h-10 dark:text-white" />;
     } else if (cat.includes('recyclable')) {
-      return <Recycle className="w-10 h-10" />;
+      return <Recycle className="w-10 h-10 dark:text-white" />;
     } else if (cat.includes('non-renewable') || cat.includes('hazardous')) {
-      return <AlertTriangle className="w-10 h-10" />;
+      return <AlertTriangle className="w-10 h-10 dark:text-white" />;
     }
-    return <Package className="w-10 h-10" />;
+    return <Package className="w-10 h-10 dark:text-white" />;
   };
 
   return (
@@ -193,7 +193,7 @@ export default function WasteClassifier() {
         {/* Logo */}
         <div className={`h-16 flex items-center px-6 border-b ${colors.border}`}>
           <Link to="/" className="flex items-center gap-2">
-            <Leaf className="w-6 h-6 text-emerald-500" />
+            <Leaf className="w-6 h-6 text-emerald-500 dark:text-white" />
             <span className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">LeafIt</span>
           </Link>
         </div>
@@ -207,7 +207,7 @@ export default function WasteClassifier() {
             <div className="flex-1 min-w-0">
               <p className={`text-sm font-medium ${colors.text.primary} truncate`}>{user?.name || 'User'}</p>
               <p className={`text-xs ${colors.text.secondary} flex items-center gap-1`}>
-                <Leaf className="w-3 h-3" /> {user?.total_points || 0} pts
+                <Leaf className="w-3 h-3 dark:text-white" /> {user?.total_points || 0} pts
               </p>
             </div>
           </div>
@@ -232,7 +232,7 @@ export default function WasteClassifier() {
                       }
                     `}
                   >
-                    <IconComponent className="w-5 h-5" />
+                    <IconComponent className="w-5 h-5 dark:text-white" />
                     <span>{item.label}</span>
                   </Link>
                 </li>
@@ -248,7 +248,7 @@ export default function WasteClassifier() {
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'} transition-all`}
           >
             <div className="flex items-center gap-3">
-              {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+              {isDark ? <Moon className="w-5 h-5 dark:text-white" /> : <Sun className="w-5 h-5 dark:text-white" />}
               <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
             </div>
             <div className={`w-10 h-5 rounded-full ${isDark ? 'bg-emerald-600' : 'bg-emerald-300'} relative transition-colors`}>
@@ -266,7 +266,7 @@ export default function WasteClassifier() {
             }}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} hover:text-red-500 ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-red-50'} transition-all`}
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-5 h-5 dark:text-white" />
             <span>Logout</span>
           </button>
         </div>
@@ -303,8 +303,8 @@ export default function WasteClassifier() {
           {/* Hero Section */}
           <div className="relative overflow-hidden rounded-2xl mb-8 bg-gradient-to-r from-emerald-600 to-teal-600 p-8 shadow-xl">
             <div className="absolute inset-0 opacity-10">
-              <Recycle className="absolute top-4 right-4 w-24 h-24" />
-              <Leaf className="absolute bottom-4 left-4 w-16 h-16" />
+              <Recycle className="absolute top-4 right-4 w-24 h-24 dark:text-white" />
+              <Leaf className="absolute bottom-4 left-4 w-16 h-16 dark:text-white" />
             </div>
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-3">
@@ -496,7 +496,7 @@ export default function WasteClassifier() {
               return (
                 <div key={i} className={`bg-gradient-to-br ${item.color} border-2 rounded-xl p-5 hover:shadow-lg transition-all`}>
                   <div className="flex items-center gap-3 mb-2">
-                    <IconComponent className={`w-8 h-8 ${item.iconColor}`} />
+                    <IconComponent className={`w-8 h-8 ${item.iconColor} dark:text-white`} />
                     <h4 className={`font-semibold ${colors.text.primary}`}>{item.title}</h4>
                   </div>
                   <p className={`text-sm ${colors.text.secondary}`}>{item.desc}</p>

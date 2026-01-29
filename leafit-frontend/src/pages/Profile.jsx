@@ -3,6 +3,25 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import activityService from '../services/activityService';
+import {
+  LayoutDashboard,
+  PlusCircle,
+  Globe,
+  Trophy,
+  Store,
+  Recycle,
+  User,
+  Leaf,
+  Moon,
+  Sun,
+  LogOut,
+  Menu,
+  ClipboardList,
+  Flame,
+  Star,
+  Target,
+  Award
+} from 'lucide-react';
 
 const Profile = () => {
   const { user, logout, refreshUser } = useAuth();
@@ -28,13 +47,13 @@ const Profile = () => {
   const [recentActivities, setRecentActivities] = useState([]);
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/log-activity', label: 'Log Activity', icon: '➕' },
-    { path: '/impact', label: 'My Impact', icon: '🌍' },
-    { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
-    { path: '/badge-store', label: 'Badge Store', icon: '🏪' },
-    { path: '/waste-classifier', label: 'Waste Classifier', icon: '♻️' },
-    { path: '/profile', label: 'Profile', icon: '👤' },
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/log-activity', label: 'Log Activity', icon: PlusCircle },
+    { path: '/impact', label: 'My Impact', icon: Globe },
+    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+    { path: '/badge-store', label: 'Badge Store', icon: Store },
+    { path: '/waste-classifier', label: 'Waste Classifier', icon: Recycle },
+    { path: '/profile', label: 'Profile', icon: User },
   ];
 
   const activityIcons = {
@@ -246,7 +265,7 @@ const Profile = () => {
       `}>
         <div className={`h-16 flex items-center px-6 border-b ${colors.border}`}>
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🌿</span>
+            <Leaf className="w-6 h-6 text-emerald-500 dark:text-white" />
             <span className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">LeafIt</span>
           </Link>
         </div>
@@ -267,6 +286,7 @@ const Profile = () => {
           <ul className="space-y-1">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
+              const IconComponent = item.icon;
               return (
                 <li key={item.path}>
                   <Link
@@ -276,7 +296,7 @@ const Profile = () => {
                       ${isActive ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' : `${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'}`}
                     `}
                   >
-                    <span className="text-lg">{item.icon}</span>
+                    <IconComponent className="w-5 h-5 dark:text-white" />
                     <span>{item.label}</span>
                   </Link>
                 </li>
@@ -291,7 +311,7 @@ const Profile = () => {
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'} transition-all`}
           >
             <div className="flex items-center gap-3">
-              <span className="text-lg">{isDark ? '🌙' : '☀️'}</span>
+              {isDark ? <Moon className="w-5 h-5 dark:text-white" /> : <Sun className="w-5 h-5 dark:text-white" />}
               <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
             </div>
             <div className={`w-10 h-5 rounded-full ${isDark ? 'bg-emerald-600' : 'bg-emerald-300'} relative transition-colors`}>
@@ -308,7 +328,7 @@ const Profile = () => {
             }} 
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} hover:text-red-500 transition-all`}
           >
-            <span className="text-lg">🚪</span>
+            <LogOut className="w-5 h-5 dark:text-white" />
             <span>Logout</span>
           </button>
         </div>
@@ -391,15 +411,15 @@ const Profile = () => {
                 ))
               ) : (
                 [
-                  { label: 'Activities Logged', value: profileData.activitiesLogged.toLocaleString(), icon: '📝' },
-                  { label: 'Current Streak', value: `${profileData.currentStreak} days`, icon: '🔥' },
-                  { label: 'Longest Streak', value: `${profileData.longestStreak} days`, icon: '⭐' },
-                  { label: 'Level', value: profileData.level, icon: '🎯' },
+                  { label: 'Activities Logged', value: profileData.activitiesLogged.toLocaleString(), icon: <ClipboardList className="w-6 h-6 text-pink-400 dark:text-white" /> },
+                  { label: 'Current Streak', value: `${profileData.currentStreak} days`, icon: <Flame className="w-6 h-6 text-orange-400 dark:text-white" /> },
+                  { label: 'Longest Streak', value: `${profileData.longestStreak} days`, icon: <Star className="w-6 h-6 text-yellow-400 dark:text-white" /> },
+                  { label: 'Level', value: profileData.level, icon: <Target className="w-6 h-6 text-pink-500 dark:text-white" /> },
                 ].map((stat, i) => (
                   <div key={i} className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-5 hover:scale-105 transition-transform duration-300 ${isDark ? '' : 'shadow-sm'}`}>
                     <div className="flex items-center justify-between mb-3">
                       <span className={`${colors.text.secondary} text-sm`}>{stat.label}</span>
-                      <span className="text-xl">{stat.icon}</span>
+                      {stat.icon}
                     </div>
                     <div className={`text-2xl font-bold ${colors.text.primary}`}>{stat.value}</div>
                   </div>
@@ -414,7 +434,9 @@ const Profile = () => {
               <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-6 ${isDark ? '' : 'shadow-sm'}`}>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className={`text-lg font-semibold ${colors.text.primary}`}>🏅 Redeemable Badges</h3>
+                    <h3 className={`text-lg font-semibold ${colors.text.primary} flex items-center gap-2`}>
+                      <Award className="w-5 h-5 text-amber-400 dark:text-white" /> Redeemable Badges
+                    </h3>
                     <p className={`text-sm ${colors.text.secondary}`}>Every 100kg CO₂ saved = 1 Badge</p>
                   </div>
                   <Link to="/badge-store" className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-sm font-medium hover:from-emerald-400 hover:to-teal-400 transition-all shadow-lg shadow-emerald-900/20">

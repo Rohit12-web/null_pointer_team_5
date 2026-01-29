@@ -3,6 +3,21 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import activityService from '../services/activityService';
+import {
+  LayoutDashboard,
+  PlusCircle,
+  Globe,
+  Trophy,
+  Store,
+  Recycle,
+  User,
+  Leaf,
+  Moon,
+  Sun,
+  LogOut,
+  Menu,
+  Medal
+} from 'lucide-react';
 
 const Leaderboard = () => {
   const { user, logout } = useAuth();
@@ -25,13 +40,13 @@ const Leaderboard = () => {
   });
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/log-activity', label: 'Log Activity', icon: '➕' },
-    { path: '/impact', label: 'My Impact', icon: '🌍' },
-    { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
-    { path: '/badge-store', label: 'Badge Store', icon: '🏪' },
-    { path: '/waste-classifier', label: 'Waste Classifier', icon: '♻️' },
-    { path: '/profile', label: 'Profile', icon: '👤' },
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/log-activity', label: 'Log Activity', icon: PlusCircle },
+    { path: '/impact', label: 'My Impact', icon: Globe },
+    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+    { path: '/badge-store', label: 'Badge Store', icon: Store },
+    { path: '/waste-classifier', label: 'Waste Classifier', icon: Recycle },
+    { path: '/profile', label: 'Profile', icon: User },
   ];
 
   // Fetch leaderboard data from API
@@ -153,7 +168,7 @@ const Leaderboard = () => {
       `}>
         <div className={`h-16 flex items-center px-6 border-b ${colors.border}`}>
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🌿</span>
+            <Leaf className="w-6 h-6 text-emerald-500 dark:text-white" />
             <span className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">LeafIt</span>
           </Link>
         </div>
@@ -174,6 +189,7 @@ const Leaderboard = () => {
           <ul className="space-y-1">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
+              const IconComponent = item.icon;
               return (
                 <li key={item.path}>
                   <Link
@@ -183,7 +199,7 @@ const Leaderboard = () => {
                       ${isActive ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' : `${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'}`}
                     `}
                   >
-                    <span className="text-lg">{item.icon}</span>
+                    <IconComponent className="w-5 h-5 dark:text-white" />
                     <span>{item.label}</span>
                   </Link>
                 </li>
@@ -198,7 +214,7 @@ const Leaderboard = () => {
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'} transition-all`}
           >
             <div className="flex items-center gap-3">
-              <span className="text-lg">{isDark ? '🌙' : '☀️'}</span>
+              {isDark ? <Moon className="w-5 h-5 dark:text-white" /> : <Sun className="w-5 h-5 dark:text-white" />}
               <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
             </div>
             <div className={`w-10 h-5 rounded-full ${isDark ? 'bg-emerald-600' : 'bg-emerald-300'} relative transition-colors`}>
@@ -215,7 +231,7 @@ const Leaderboard = () => {
             }} 
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} hover:text-red-500 transition-all`}
           >
-            <span className="text-lg">🚪</span>
+            <LogOut className="w-5 h-5 dark:text-white" />
             <span>Logout</span>
           </button>
         </div>
@@ -294,7 +310,7 @@ const Leaderboard = () => {
                       {leaderboardData[1].avatar}
                     </div>
                     <div className={`${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border} rounded-xl p-4 ${isDark ? '' : 'shadow-sm'}`} style={{ height: '120px' }}>
-                      <div className="text-2xl mb-1">🥈</div>
+                      <Medal className="w-8 h-8 text-gray-400 dark:text-white mx-auto mb-1" />
                       <p className={`font-medium ${colors.text.primary} text-sm truncate`}>{leaderboardData[1].name}</p>
                       <p className="text-emerald-500 font-bold">{leaderboardData[1].points.toLocaleString()}</p>
                     </div>
@@ -308,7 +324,7 @@ const Leaderboard = () => {
                       {leaderboardData[0].avatar}
                     </div>
                     <div className={`${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border} rounded-xl p-4 ${isDark ? '' : 'shadow-sm'}`} style={{ height: '140px' }}>
-                      <div className="text-3xl mb-1">🥇</div>
+                      <Medal className="w-10 h-10 text-yellow-400 dark:text-white mx-auto mb-1" />
                       <p className={`font-medium ${colors.text.primary} truncate`}>{leaderboardData[0].name}</p>
                       <p className="text-emerald-500 font-bold text-lg">{leaderboardData[0].points.toLocaleString()}</p>
                     </div>
@@ -322,7 +338,7 @@ const Leaderboard = () => {
                       {leaderboardData[2].avatar}
                     </div>
                     <div className={`${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border} rounded-xl p-4 ${isDark ? '' : 'shadow-sm'}`} style={{ height: '100px' }}>
-                      <div className="text-2xl mb-1">🥉</div>
+                      <Medal className="w-8 h-8 text-amber-600 dark:text-white mx-auto mb-1" />
                       <p className={`font-medium ${colors.text.primary} text-sm truncate`}>{leaderboardData[2].name}</p>
                       <p className="text-emerald-500 font-bold">{leaderboardData[2].points.toLocaleString()}</p>
                     </div>

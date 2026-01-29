@@ -1,5 +1,9 @@
+import json
 import os
 import jwt
+import base64
+from PIL import Image
+from io import BytesIO
 import uuid
 import requests
 from datetime import datetime, timedelta
@@ -535,3 +539,95 @@ def chat_with_ai(request):
     except Exception as e:
         print(f"DEBUG OPENAI ERROR: {str(e)}")
         return Response({"error": str(e)}, status=500)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def classify_image(request):
+    """
+    Image classification using OpenRouter (GPT-4o-mini Vision)
+    """
+
+    import json
+
+    image_file = request.FILES.get("image")
+    if not image_file:
+        return Response({"error": "No image uploaded"}, status=400)
+
+    # Convert image to base64
+    try:
+        img = Image.open(image_file).convert("RGB")
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        image_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    except Exception:
+        return Response({"error": "Invalid image file"}, status=400)
+
+    openrouter_key = os.getenv("OPENROUTER_API_KEY")
+    if not openrouter_key:
+        return Response({"error": "OPENROUTER_API_KEY missing"}, status=500)
+
+    headers = {
+        "Authorization": f"Bearer {openrouter_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "http://localhost:3000",
+        "X-Title": "LeafIt"
+    }
+
+    payload = {
+        "model": "openai/gpt-4o-mini",
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are an environmental expert AI.\n"
+                    "Classify the object into ONE category only:\n"
+                    "Biodegradable, Non-biodegradable, Renewable, Non-renewable, Other.\n\n"
+                    "Respond ONLY in valid JSON:\n"
+                    "{"
+                    "\"category\": \"...\", "
+                    "\"explanation\": \"...\", "
+                    "\"disposal_tip\": \"...\""
+                    "}"
+                )
+            },
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "Classify this object."},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_base64}"
+                        }
+                    }
+                ]
+            }
+        ],
+        "max_tokens": 300
+    }
+
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers=headers,
+        json=payload,
+        timeout=60
+    )
+
+    if response.status_code != 200:
+        print("OPENROUTER ERROR:", response.text)
+        return Response(
+            {"error": "AI classification failed", "details": response.text},
+            status=500
+        )
+
+    try:
+        ai_reply = response.json()["choices"][0]["message"]["content"]
+        parsed = json.loads(ai_reply)
+    except Exception:
+        parsed = {
+            "category": "Other",
+            "explanation": ai_reply,
+            "disposal_tip": "Please dispose responsibly."
+        }
+
+    return Response({"success": True, "result": parsed})

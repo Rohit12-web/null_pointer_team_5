@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from .views import classify_image
 from .views import (
     GreenActionViewSet, chat_with_ai,
     RegisterView, LoginView, LogoutView, RefreshTokenView,
@@ -13,6 +14,7 @@ router.register(r'actions', GreenActionViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('chat/', chat_with_ai),
+    path('classify-image/', classify_image),
     
     # Authentication endpoints
     path('auth/register/', RegisterView.as_view(), name='register'),

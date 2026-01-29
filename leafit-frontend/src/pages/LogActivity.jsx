@@ -3,6 +3,26 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import activityService from '../services/activityService';
+import {
+  LayoutDashboard,
+  PlusCircle,
+  Globe,
+  Trophy,
+  Store,
+  Recycle,
+  User,
+  Leaf,
+  Moon,
+  Sun,
+  LogOut,
+  Menu,
+  Bus,
+  Lightbulb,
+  Droplets,
+  Salad,
+  XCircle,
+  CheckCircle
+} from 'lucide-react';
 
 const LogActivity = () => {
   const navigate = useNavigate();
@@ -28,19 +48,19 @@ const LogActivity = () => {
   const [recentActivities, setRecentActivities] = useState([]);
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/log-activity', label: 'Log Activity', icon: '➕' },
-    { path: '/impact', label: 'My Impact', icon: '🌍' },
-    { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
-    { path: '/badge-store', label: 'Badge Store', icon: '🏪' },
-    { path: '/waste-classifier', label: 'Waste Classifier', icon: '♻️' },
-    { path: '/profile', label: 'Profile', icon: '👤' },
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/log-activity', label: 'Log Activity', icon: PlusCircle },
+    { path: '/impact', label: 'My Impact', icon: Globe },
+    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+    { path: '/badge-store', label: 'Badge Store', icon: Store },
+    { path: '/waste-classifier', label: 'Waste Classifier', icon: Recycle },
+    { path: '/profile', label: 'Profile', icon: User },
   ];
 
   const activityTypes = [
     {
       id: 'transport',
-      icon: '🚌',
+      icon: <Bus className="w-8 h-8 dark:text-white" />,
       name: 'Transportation',
       description: 'Public transport, cycling, walking, carpooling',
       color: 'bg-blue-500/10 border-blue-500/30 hover:border-blue-500/50',
@@ -55,7 +75,7 @@ const LogActivity = () => {
     },
     {
       id: 'electricity',
-      icon: '💡',
+      icon: <Lightbulb className="w-8 h-8 dark:text-white" />,
       name: 'Energy Saving',
       description: 'Reduce electricity consumption',
       color: 'bg-yellow-500/10 border-yellow-500/30 hover:border-yellow-500/50',
@@ -70,7 +90,7 @@ const LogActivity = () => {
     },
     {
       id: 'recycling',
-      icon: '♻️',
+      icon: <Recycle className="w-8 h-8 dark:text-white" />,
       name: 'Recycling & Waste',
       description: 'Reduce, reuse, and recycle waste',
       color: 'bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-500/50',
@@ -85,7 +105,7 @@ const LogActivity = () => {
     },
     {
       id: 'water',
-      icon: '💧',
+      icon: <Droplets className="w-8 h-8 dark:text-white" />,
       name: 'Water Conservation',
       description: 'Save and conserve water',
       color: 'bg-cyan-500/10 border-cyan-500/30 hover:border-cyan-500/50',
@@ -100,7 +120,7 @@ const LogActivity = () => {
     },
     {
       id: 'food',
-      icon: '🥗',
+      icon: <Salad className="w-8 h-8 dark:text-white" />,
       name: 'Sustainable Food',
       description: 'Plant-based and local food choices',
       color: 'bg-orange-500/10 border-orange-500/30 hover:border-orange-500/50',
@@ -246,7 +266,7 @@ const LogActivity = () => {
       `}>
         <div className={`h-16 flex items-center px-6 border-b ${colors.border}`}>
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🌿</span>
+            <Leaf className="w-6 h-6 text-emerald-500 dark:text-white" />
             <span className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">LeafIt</span>
           </Link>
         </div>
@@ -267,6 +287,7 @@ const LogActivity = () => {
           <ul className="space-y-1">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
+              const IconComponent = item.icon;
               return (
                 <li key={item.path}>
                   <Link
@@ -276,7 +297,7 @@ const LogActivity = () => {
                       ${isActive ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' : `${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'}`}
                     `}
                   >
-                    <span className="text-lg">{item.icon}</span>
+                    <IconComponent className="w-5 h-5 dark:text-white" />
                     <span>{item.label}</span>
                   </Link>
                 </li>
@@ -291,7 +312,7 @@ const LogActivity = () => {
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'} transition-all`}
           >
             <div className="flex items-center gap-3">
-              <span className="text-lg">{isDark ? '🌙' : '☀️'}</span>
+              {isDark ? <Moon className="w-5 h-5 dark:text-white" /> : <Sun className="w-5 h-5 dark:text-white" />}
               <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
             </div>
             <div className={`w-10 h-5 rounded-full ${isDark ? 'bg-emerald-600' : 'bg-emerald-300'} relative transition-colors`}>
@@ -308,7 +329,7 @@ const LogActivity = () => {
             }} 
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} hover:text-red-500 transition-all`}
           >
-            <span className="text-lg">🚪</span>
+            <LogOut className="w-5 h-5 dark:text-white" />
             <span>Logout</span>
           </button>
         </div>
@@ -335,7 +356,7 @@ const LogActivity = () => {
           {/* Error Message */}
           {error && (
             <div className="mb-6 bg-red-500/20 border border-red-500/30 text-red-500 px-6 py-4 rounded-xl flex items-center gap-2">
-              <span className="text-2xl">❌</span>
+              <XCircle className="w-6 h-6 dark:text-white" />
               <span className="font-medium">{error}</span>
               <button onClick={() => setError('')} className="ml-auto hover:text-red-300">✕</button>
             </div>
@@ -345,13 +366,13 @@ const LogActivity = () => {
           {showSuccess && lastImpact && (
             <div className="mb-6 bg-emerald-500/20 border border-emerald-500/30 text-emerald-500 px-6 py-4 rounded-xl">
               <div className="flex items-center justify-center gap-2 mb-2">
-                <span className="text-2xl">✅</span>
+                <CheckCircle className="w-6 h-6 dark:text-white" />
                 <span className="font-medium text-lg">Activity logged successfully!</span>
               </div>
               <div className="flex items-center justify-center gap-6 text-sm">
                 <span>+{lastImpact.points_earned} points</span>
-                <span>🌍 {lastImpact.co2_saved.toFixed(2)} kg CO₂ saved</span>
-                {lastImpact.water_saved > 0 && <span>💧 {lastImpact.water_saved.toFixed(1)}L water saved</span>}
+                <span className="flex items-center gap-1"><Globe className="w-4 h-4 dark:text-white" /> {lastImpact.co2_saved.toFixed(2)} kg CO₂ saved</span>
+                {lastImpact.water_saved > 0 && <span className="flex items-center gap-1"><Droplets className="w-4 h-4 dark:text-white" /> {lastImpact.water_saved.toFixed(1)}L water saved</span>}
               </div>
             </div>
           )}

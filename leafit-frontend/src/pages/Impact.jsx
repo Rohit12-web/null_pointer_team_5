@@ -3,6 +3,29 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import activityService from '../services/activityService';
+import {
+  LayoutDashboard,
+  PlusCircle,
+  Globe,
+  Trophy,
+  Store,
+  Recycle,
+  User,
+  Leaf,
+  Moon,
+  Sun,
+  LogOut,
+  Menu,
+  Bus,
+  Lightbulb,
+  Droplets,
+  Salad,
+  TreePine,
+  Car,
+  Wine,
+  Zap,
+  BarChart3
+} from 'lucide-react';
 
 const Impact = () => {
   const { user, logout, refreshUser } = useAuth();
@@ -39,40 +62,40 @@ const Impact = () => {
   ]);
 
   const activityIcons = {
-    transport: '🚌',
-    electricity: '💡',
-    recycling: '♻️',
-    water: '💧',
-    food: '🥗',
-    other: '🌳',
+    transport: <Bus className="w-5 h-5 dark:text-white" />,
+    electricity: <Lightbulb className="w-5 h-5 dark:text-white" />,
+    recycling: <Recycle className="w-5 h-5 dark:text-white" />,
+    water: <Droplets className="w-5 h-5 dark:text-white" />,
+    food: <Salad className="w-5 h-5 dark:text-white" />,
+    other: <TreePine className="w-5 h-5 dark:text-white" />,
   };
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/log-activity', label: 'Log Activity', icon: '➕' },
-    { path: '/impact', label: 'My Impact', icon: '🌍' },
-    { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
-    { path: '/badge-store', label: 'Badge Store', icon: '🏪' },
-    { path: '/waste-classifier', label: 'Waste Classifier', icon: '♻️' },
-    { path: '/profile', label: 'Profile', icon: '👤' },
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/log-activity', label: 'Log Activity', icon: PlusCircle },
+    { path: '/impact', label: 'My Impact', icon: Globe },
+    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+    { path: '/badge-store', label: 'Badge Store', icon: Store },
+    { path: '/waste-classifier', label: 'Waste Classifier', icon: Recycle },
+    { path: '/profile', label: 'Profile', icon: User },
   ];
 
   // Calculate real-world comparisons based on actual stats
   const comparisons = [
     { 
-      icon: '🌳', 
+      icon: <TreePine className="w-12 h-12 dark:text-white" />, 
       value: (impactStats.totalCO2Saved / 21.77).toFixed(1), 
       unit: 'trees', 
       description: 'Worth of CO₂ absorbed yearly' 
     },
     { 
-      icon: '🚗', 
+      icon: <Car className="w-12 h-12 dark:text-white" />, 
       value: Math.round(impactStats.totalCO2Saved * 2.5), 
       unit: 'miles', 
       description: 'Of car emissions offset' 
     },
     { 
-      icon: '🍾', 
+      icon: <Wine className="w-12 h-12 dark:text-white" />, 
       value: Math.round(impactStats.totalCO2Saved * 20), 
       unit: 'bottles', 
       description: 'Of plastic waste avoided' 
@@ -222,7 +245,7 @@ const Impact = () => {
       `}>
         <div className={`h-16 flex items-center px-6 border-b ${colors.border}`}>
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🌿</span>
+            <Leaf className="w-6 h-6 text-emerald-500 dark:text-white" />
             <span className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">LeafIt</span>
           </Link>
         </div>
@@ -243,6 +266,7 @@ const Impact = () => {
           <ul className="space-y-1">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
+              const IconComponent = item.icon;
               return (
                 <li key={item.path}>
                   <Link
@@ -252,7 +276,7 @@ const Impact = () => {
                       ${isActive ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' : `${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'}`}
                     `}
                   >
-                    <span className="text-lg">{item.icon}</span>
+                    <IconComponent className="w-5 h-5 dark:text-white" />
                     <span>{item.label}</span>
                   </Link>
                 </li>
@@ -267,7 +291,7 @@ const Impact = () => {
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} ${isDark ? 'hover:bg-[#1f2d24]' : 'hover:bg-emerald-100'} transition-all`}
           >
             <div className="flex items-center gap-3">
-              <span className="text-lg">{isDark ? '🌙' : '☀️'}</span>
+              {isDark ? <Moon className="w-5 h-5 dark:text-white" /> : <Sun className="w-5 h-5 dark:text-white" />}
               <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
             </div>
             <div className={`w-10 h-5 rounded-full ${isDark ? 'bg-emerald-600' : 'bg-emerald-300'} relative transition-colors`}>
@@ -284,7 +308,7 @@ const Impact = () => {
             }} 
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${colors.text.secondary} hover:text-red-500 transition-all`}
           >
-            <span className="text-lg">🚪</span>
+            <LogOut className="w-5 h-5 dark:text-white" />
             <span>Logout</span>
           </button>
         </div>
@@ -338,7 +362,7 @@ const Impact = () => {
             
             <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-2xl p-6 hover:border-yellow-500/50 transition-colors ${isDark ? '' : 'shadow-sm'}`}>
               <div className="flex items-center justify-between mb-4">
-                <span className="text-3xl">⚡</span>
+                <Zap className="w-8 h-8 text-yellow-400 dark:text-white" />
                 <span className={`text-sm ${impactStats.totalEnergySaved > 0 ? 'text-emerald-500' : colors.text.secondary}`}>
                   {impactStats.totalEnergySaved > 0 ? 'Efficient!' : 'Save energy'}
                 </span>
@@ -349,7 +373,7 @@ const Impact = () => {
             
             <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-2xl p-6 hover:border-cyan-500/50 transition-colors ${isDark ? '' : 'shadow-sm'}`}>
               <div className="flex items-center justify-between mb-4">
-                <span className="text-3xl">💧</span>
+                <Droplets className="w-8 h-8 text-cyan-400 dark:text-white" />
                 <span className={`text-sm ${impactStats.totalWaterSaved > 0 ? 'text-emerald-500' : colors.text.secondary}`}>
                   {impactStats.totalWaterSaved > 0 ? 'Conserving!' : 'Save water'}
                 </span>
@@ -360,7 +384,7 @@ const Impact = () => {
             
             <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-2xl p-6 hover:border-purple-500/50 transition-colors ${isDark ? '' : 'shadow-sm'}`}>
               <div className="flex items-center justify-between mb-4">
-                <span className="text-3xl">♻️</span>
+                <Recycle className="w-8 h-8 text-emerald-400 dark:text-white" />
                 <span className={`text-sm ${impactStats.totalWasteReduced > 0 ? 'text-emerald-500' : colors.text.secondary}`}>
                   {impactStats.totalWasteReduced > 0 ? 'Recycling!' : 'Reduce waste'}
                 </span>
@@ -376,7 +400,7 @@ const Impact = () => {
             <div className="grid md:grid-cols-3 gap-6">
               {comparisons.map((item, index) => (
                 <div key={index} className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-                  <span className="text-4xl">{item.icon}</span>
+                  <div className="text-white mb-2">{item.icon}</div>
                   <div className="mt-2">
                     <span className="text-3xl font-bold">{item.value}</span>
                     <span className="text-lg ml-1">{item.unit}</span>
@@ -634,12 +658,12 @@ const Impact = () => {
                   };
 
                   const categoryIcons = {
-                    transport: '🚌',
-                    electricity: '💡',
-                    recycling: '♻️',
-                    water: '💧',
-                    food: '🥗',
-                    other: '🌳',
+                    transport: <Bus className="w-4 h-4 dark:text-white" />,
+                    electricity: <Lightbulb className="w-4 h-4 dark:text-white" />,
+                    recycling: <Recycle className="w-4 h-4 dark:text-white" />,
+                    water: <Droplets className="w-4 h-4 dark:text-white" />,
+                    food: <Salad className="w-4 h-4 dark:text-white" />,
+                    other: <TreePine className="w-4 h-4 dark:text-white" />,
                   };
 
                   return (
@@ -735,7 +759,7 @@ const Impact = () => {
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1">
-                                <span className="text-sm">{categoryIcons[item.key] || '🌱'}</span>
+                                <span className="text-sm">{categoryIcons[item.key] || <Leaf className="w-4 h-4" />}</span>
                                 <span className={`text-sm font-medium ${colors.text.primary} truncate`}>{item.label}</span>
                               </div>
                               <p className={`text-xs ${colors.text.secondary}`}>{item.percentage.toFixed(1)}%</p>
@@ -748,7 +772,7 @@ const Impact = () => {
                 })()
               ) : (
                 <div className={`text-center py-8 ${colors.text.secondary}`}>
-                  <span className="text-3xl mb-2 block">📊</span>
+                  <BarChart3 className="w-12 h-12 mx-auto mb-2" />
                   <p className="text-sm">Log activities to see your category breakdown</p>
                 </div>
               )}

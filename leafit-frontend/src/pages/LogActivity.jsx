@@ -23,7 +23,8 @@ const LogActivity = () => {
       icon: '🚌',
       name: 'Transportation',
       description: 'Public transport, cycling, walking, carpooling',
-      color: 'bg-blue-50 border-blue-200 hover:border-blue-400',
+      color: 'bg-blue-500/10 border-blue-500/30 hover:border-blue-500/50',
+      activeColor: 'border-blue-500 bg-blue-500/20',
       subTypes: [
         { id: 'public_transport', name: 'Public Transport', unit: 'km', impact: '0.14 kg CO₂/km saved' },
         { id: 'cycling', name: 'Cycling', unit: 'km', impact: '0.21 kg CO₂/km saved' },
@@ -37,7 +38,8 @@ const LogActivity = () => {
       icon: '💡',
       name: 'Energy Saving',
       description: 'Reduce electricity consumption',
-      color: 'bg-yellow-50 border-yellow-200 hover:border-yellow-400',
+      color: 'bg-yellow-500/10 border-yellow-500/30 hover:border-yellow-500/50',
+      activeColor: 'border-yellow-500 bg-yellow-500/20',
       subTypes: [
         { id: 'led_lights', name: 'Used LED Lights', unit: 'hours', impact: '0.04 kg CO₂/hour saved' },
         { id: 'unplug_devices', name: 'Unplugged Devices', unit: 'hours', impact: '0.02 kg CO₂/hour saved' },
@@ -51,7 +53,8 @@ const LogActivity = () => {
       icon: '♻️',
       name: 'Recycling & Waste',
       description: 'Reduce, reuse, and recycle waste',
-      color: 'bg-green-50 border-green-200 hover:border-green-400',
+      color: 'bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-500/50',
+      activeColor: 'border-emerald-500 bg-emerald-500/20',
       subTypes: [
         { id: 'plastic_recycling', name: 'Recycled Plastic', unit: 'items', impact: '0.5 kg CO₂/item saved' },
         { id: 'paper_recycling', name: 'Recycled Paper', unit: 'kg', impact: '1.0 kg CO₂/kg saved' },
@@ -65,7 +68,8 @@ const LogActivity = () => {
       icon: '💧',
       name: 'Water Conservation',
       description: 'Save and conserve water',
-      color: 'bg-cyan-50 border-cyan-200 hover:border-cyan-400',
+      color: 'bg-cyan-500/10 border-cyan-500/30 hover:border-cyan-500/50',
+      activeColor: 'border-cyan-500 bg-cyan-500/20',
       subTypes: [
         { id: 'shorter_shower', name: 'Shorter Shower', unit: 'minutes saved', impact: '10 liters/minute saved' },
         { id: 'fix_leaks', name: 'Fixed Leaks', unit: 'times', impact: '20 liters/day saved' },
@@ -79,7 +83,8 @@ const LogActivity = () => {
       icon: '🥗',
       name: 'Sustainable Food',
       description: 'Plant-based and local food choices',
-      color: 'bg-orange-50 border-orange-200 hover:border-orange-400',
+      color: 'bg-orange-500/10 border-orange-500/30 hover:border-orange-500/50',
+      activeColor: 'border-orange-500 bg-orange-500/20',
       subTypes: [
         { id: 'plant_based_meal', name: 'Plant-Based Meal', unit: 'meals', impact: '2.5 kg CO₂/meal saved' },
         { id: 'local_food', name: 'Bought Local Food', unit: 'items', impact: '0.5 kg CO₂/item saved' },
@@ -93,7 +98,8 @@ const LogActivity = () => {
       icon: '🌳',
       name: 'Other Activities',
       description: 'Tree planting, eco drives, and more',
-      color: 'bg-purple-50 border-purple-200 hover:border-purple-400',
+      color: 'bg-purple-500/10 border-purple-500/30 hover:border-purple-500/50',
+      activeColor: 'border-purple-500 bg-purple-500/20',
       subTypes: [
         { id: 'tree_planting', name: 'Planted a Tree', unit: 'trees', impact: '22 kg CO₂/year absorbed' },
         { id: 'eco_drive', name: 'Joined Eco Drive', unit: 'hours', impact: 'Community impact' },
@@ -165,27 +171,28 @@ const LogActivity = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-neutral-950 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Log Your Activity</h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-emerald-400 text-sm tracking-widest uppercase mb-2">Track Your Actions</p>
+          <h1 className="text-3xl font-bold text-white">Log Your Activity</h1>
+          <p className="text-neutral-400 mt-2">
             Record your eco-friendly actions and see your impact grow 🌱
           </p>
         </div>
 
         {/* Success Message */}
         {showSuccess && (
-          <div className="mb-6 bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-xl flex items-center justify-center space-x-2 animate-pulse">
+          <div className="mb-6 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-6 py-4 rounded-xl flex items-center justify-center space-x-2">
             <span className="text-2xl">✅</span>
             <span className="font-medium">Activity logged successfully! +{calculateImpact() || 10} points earned!</span>
           </div>
         )}
 
         {/* Activity Type Selection */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 mb-6">
+          <h2 className="text-xl font-semibold text-white mb-4">
             1. Select Activity Type
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -195,13 +202,13 @@ const LogActivity = () => {
                 onClick={() => handleTypeSelect(type.id)}
                 className={`p-4 rounded-xl border-2 transition-all text-left ${
                   formData.type === type.id
-                    ? 'border-green-500 bg-green-50 ring-2 ring-green-200'
+                    ? type.activeColor + ' ring-2 ring-emerald-500/30'
                     : type.color
                 }`}
               >
                 <span className="text-3xl block mb-2">{type.icon}</span>
-                <h3 className="font-semibold text-gray-800">{type.name}</h3>
-                <p className="text-xs text-gray-500 mt-1">{type.description}</p>
+                <h3 className="font-semibold text-white">{type.name}</h3>
+                <p className="text-xs text-neutral-400 mt-1">{type.description}</p>
               </button>
             ))}
           </div>
@@ -209,8 +216,8 @@ const LogActivity = () => {
 
         {/* Sub-type Selection */}
         {formData.type && (
-          <div className="bg-white rounded-2xl shadow-sm p-6 mb-6 animate-fadeIn">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 mb-6">
+            <h2 className="text-xl font-semibold text-white mb-4">
               2. What did you do?
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -220,12 +227,12 @@ const LogActivity = () => {
                   onClick={() => handleSubTypeSelect(subType.id)}
                   className={`p-4 rounded-xl border-2 transition-all text-left ${
                     formData.subType === subType.id
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-emerald-500 bg-emerald-500/10'
+                      : 'border-neutral-700 hover:border-neutral-600 bg-neutral-800'
                   }`}
                 >
-                  <h3 className="font-medium text-gray-800">{subType.name}</h3>
-                  <p className="text-sm text-green-600 mt-1">{subType.impact}</p>
+                  <h3 className="font-medium text-white">{subType.name}</h3>
+                  <p className="text-sm text-emerald-400 mt-1">{subType.impact}</p>
                 </button>
               ))}
             </div>
@@ -234,15 +241,15 @@ const LogActivity = () => {
 
         {/* Activity Details Form */}
         {formData.subType && (
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm p-6 animate-fadeIn">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <form onSubmit={handleSubmit} className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">
               3. Activity Details
             </h2>
 
             <div className="grid md:grid-cols-2 gap-6">
               {/* Quantity */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-300 mb-2">
                   Quantity ({selectedSubType?.unit})
                 </label>
                 <input
@@ -251,7 +258,7 @@ const LogActivity = () => {
                   step="0.1"
                   value={formData.quantity}
                   onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                   placeholder={`Enter ${selectedSubType?.unit}`}
                   required
                 />
@@ -259,7 +266,7 @@ const LogActivity = () => {
 
               {/* Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-300 mb-2">
                   Date
                 </label>
                 <input
@@ -267,21 +274,21 @@ const LogActivity = () => {
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                   max={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                   required
                 />
               </div>
 
               {/* Description */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-300 mb-2">
                   Notes (Optional)
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                   placeholder="Add any notes about this activity..."
                 />
               </div>
@@ -289,20 +296,20 @@ const LogActivity = () => {
 
             {/* Impact Preview */}
             {formData.quantity && (
-              <div className="mt-6 p-4 bg-green-50 rounded-xl border border-green-200">
-                <h3 className="font-medium text-green-800 mb-2">Estimated Impact</h3>
+              <div className="mt-6 p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                <h3 className="font-medium text-emerald-400 mb-2">Estimated Impact</h3>
                 <div className="flex items-center space-x-6">
                   <div>
-                    <span className="text-2xl font-bold text-green-600">
+                    <span className="text-2xl font-bold text-white">
                       {calculateImpact()} kg
                     </span>
-                    <span className="text-gray-600 ml-1">CO₂ saved</span>
+                    <span className="text-neutral-400 ml-1">CO₂ saved</span>
                   </div>
                   <div>
-                    <span className="text-2xl font-bold text-green-600">
+                    <span className="text-2xl font-bold text-white">
                       +{Math.round(parseFloat(formData.quantity) * 5)}
                     </span>
-                    <span className="text-gray-600 ml-1">points</span>
+                    <span className="text-neutral-400 ml-1">points</span>
                   </div>
                 </div>
               </div>
@@ -314,8 +321,8 @@ const LogActivity = () => {
               disabled={isSubmitting}
               className={`mt-6 w-full py-4 rounded-xl font-semibold text-lg transition-all ${
                 isSubmitting
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-green-500 hover:bg-green-600 text-white transform hover:scale-[1.02]'
+                  ? 'bg-neutral-700 cursor-not-allowed text-neutral-400'
+                  : 'bg-emerald-500 hover:bg-emerald-400 text-black transform hover:scale-[1.02]'
               }`}
             >
               {isSubmitting ? (

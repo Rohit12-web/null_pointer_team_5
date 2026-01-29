@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import Chart from '../components/Chart';
-import ImpactCard from '../components/ImpactCard';
-import ActivityCard from '../components/ActivityCard';
 
 const Impact = () => {
   const { user } = useAuth();
@@ -48,6 +45,7 @@ const Impact = () => {
     {
       id: 1,
       type: 'transport',
+      icon: '🚌',
       description: 'Took the bus to work',
       carbonSaved: 2.6,
       points: 25,
@@ -56,6 +54,7 @@ const Impact = () => {
     {
       id: 2,
       type: 'electricity',
+      icon: '💡',
       description: 'Used LED lights all day',
       carbonSaved: 0.8,
       points: 15,
@@ -64,6 +63,7 @@ const Impact = () => {
     {
       id: 3,
       type: 'recycling',
+      icon: '♻️',
       description: 'Recycled 10 plastic bottles',
       carbonSaved: 1.2,
       points: 20,
@@ -72,6 +72,7 @@ const Impact = () => {
     {
       id: 4,
       type: 'water',
+      icon: '💧',
       description: 'Shorter shower (5 mins)',
       carbonSaved: 0.3,
       points: 10,
@@ -80,6 +81,7 @@ const Impact = () => {
     {
       id: 5,
       type: 'food',
+      icon: '🥗',
       description: 'Plant-based lunch',
       carbonSaved: 2.5,
       points: 30,
@@ -108,14 +110,29 @@ const Impact = () => {
     },
   ];
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString();
+  };
+
+  const maxValue = Math.max(...monthlyData.map(d => d.value));
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-neutral-950 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Your Environmental Impact</h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-emerald-400 text-sm tracking-widest uppercase mb-2">Analytics</p>
+            <h1 className="text-3xl font-bold text-white">Your Environmental Impact</h1>
+            <p className="text-neutral-400 mt-1">
               See how your actions are making a difference 🌍
             </p>
           </div>
@@ -124,10 +141,10 @@ const Impact = () => {
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   timeRange === range
-                    ? 'bg-green-500 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                    ? 'bg-emerald-500 text-black'
+                    : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200'
                 }`}
               >
                 {range.charAt(0).toUpperCase() + range.slice(1)}
@@ -138,47 +155,45 @@ const Impact = () => {
 
         {/* Main Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <ImpactCard
-            title="CO₂ Saved"
-            value={impactStats.totalCO2Saved}
-            unit="kg"
-            icon="🌍"
-            color="green"
-            trend="up"
-            trendValue="+15% vs last month"
-            description="Carbon dioxide emissions prevented"
-          />
-          <ImpactCard
-            title="Energy Saved"
-            value={impactStats.totalEnergySaved}
-            unit="kWh"
-            icon="⚡"
-            color="yellow"
-            trend="up"
-            trendValue="+8% vs last month"
-          />
-          <ImpactCard
-            title="Water Saved"
-            value={impactStats.totalWaterSaved}
-            unit="L"
-            icon="💧"
-            color="cyan"
-            trend="up"
-            trendValue="+22% vs last month"
-          />
-          <ImpactCard
-            title="Waste Reduced"
-            value={impactStats.totalWasteReduced}
-            unit="kg"
-            icon="♻️"
-            color="purple"
-            trend="up"
-            trendValue="+12% vs last month"
-          />
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 hover:border-emerald-500/50 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-3xl">🌍</span>
+              <span className="text-emerald-400 text-sm">+15%</span>
+            </div>
+            <h3 className="text-neutral-400 text-sm">CO₂ Saved</h3>
+            <p className="text-3xl font-bold text-white mt-1">{impactStats.totalCO2Saved} <span className="text-lg text-neutral-500">kg</span></p>
+          </div>
+          
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 hover:border-yellow-500/50 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-3xl">⚡</span>
+              <span className="text-emerald-400 text-sm">+8%</span>
+            </div>
+            <h3 className="text-neutral-400 text-sm">Energy Saved</h3>
+            <p className="text-3xl font-bold text-white mt-1">{impactStats.totalEnergySaved} <span className="text-lg text-neutral-500">kWh</span></p>
+          </div>
+          
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 hover:border-cyan-500/50 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-3xl">💧</span>
+              <span className="text-emerald-400 text-sm">+22%</span>
+            </div>
+            <h3 className="text-neutral-400 text-sm">Water Saved</h3>
+            <p className="text-3xl font-bold text-white mt-1">{impactStats.totalWaterSaved} <span className="text-lg text-neutral-500">L</span></p>
+          </div>
+          
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 hover:border-purple-500/50 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-3xl">♻️</span>
+              <span className="text-emerald-400 text-sm">+12%</span>
+            </div>
+            <h3 className="text-neutral-400 text-sm">Waste Reduced</h3>
+            <p className="text-3xl font-bold text-white mt-1">{impactStats.totalWasteReduced} <span className="text-lg text-neutral-500">kg</span></p>
+          </div>
         </div>
 
         {/* Real-World Comparisons */}
-        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 mb-8 text-white">
+        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-6 mb-8 text-white">
           <h2 className="text-xl font-semibold mb-6">Your Impact in Perspective</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {comparisons.map((item, index) => (
@@ -188,7 +203,7 @@ const Impact = () => {
                   <span className="text-3xl font-bold">{item.value}</span>
                   <span className="text-lg ml-1">{item.unit}</span>
                 </div>
-                <p className="text-green-100 text-sm mt-1">{item.description}</p>
+                <p className="text-emerald-100 text-sm mt-1">{item.description}</p>
               </div>
             ))}
           </div>
@@ -197,57 +212,62 @@ const Impact = () => {
         {/* Charts Section */}
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
           {/* CO2 Trend Chart */}
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">CO₂ Savings Trend</h2>
-            <Chart type="line" data={monthlyData} height={250} color="#10B981" />
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+            <h2 className="text-xl font-semibold text-white mb-6">CO₂ Savings Trend</h2>
+            <div className="flex items-end justify-between h-48 gap-2">
+              {monthlyData.map((month, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                  <div 
+                    className="w-full bg-emerald-500 rounded-t-lg transition-all hover:bg-emerald-400"
+                    style={{ height: `${(month.value / maxValue) * 100}%` }}
+                  />
+                  <span className="text-xs text-neutral-500">{month.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Category Breakdown */}
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">Impact by Category</h2>
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="w-48">
-                <Chart type="donut" data={categoryBreakdown} size={180} />
-              </div>
-              <div className="flex-1 space-y-4">
-                {categoryBreakdown.map((item, index) => (
-                  <div key={index}>
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center space-x-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <span className="text-gray-700">{item.label}</span>
-                      </div>
-                      <span className="font-medium">{item.value}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+            <h2 className="text-xl font-semibold text-white mb-6">Impact by Category</h2>
+            <div className="space-y-4">
+              {categoryBreakdown.map((item, index) => (
+                <div key={index}>
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center space-x-2">
                       <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${item.value}%`, backgroundColor: item.color }}
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: item.color }}
                       />
+                      <span className="text-neutral-300">{item.label}</span>
                     </div>
+                    <span className="font-medium text-white">{item.value}%</span>
                   </div>
-                ))}
-              </div>
+                  <div className="w-full h-2 bg-neutral-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${item.value}%`, backgroundColor: item.color }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Activity History */}
-        <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-800">Activity History</h2>
+            <h2 className="text-xl font-semibold text-white">Activity History</h2>
             <div className="mt-4 md:mt-0 flex space-x-2 overflow-x-auto">
               {['all', 'transport', 'electricity', 'recycling', 'water', 'food'].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                     selectedCategory === cat
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-emerald-500 text-black'
+                      : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
                   }`}
                 >
                   {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -256,27 +276,42 @@ const Impact = () => {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {activities
               .filter((a) => selectedCategory === 'all' || a.type === selectedCategory)
               .map((activity) => (
-                <ActivityCard key={activity.id} activity={activity} showActions={false} />
+                <div 
+                  key={activity.id} 
+                  className="flex items-center justify-between p-4 bg-neutral-800 border border-neutral-700 rounded-xl hover:border-neutral-600 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-2xl">{activity.icon}</span>
+                    <div>
+                      <p className="text-white font-medium">{activity.description}</p>
+                      <p className="text-neutral-500 text-sm">{formatDate(activity.createdAt)}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-emerald-400 font-semibold">-{activity.carbonSaved} kg CO₂</p>
+                    <p className="text-neutral-500 text-sm">+{activity.points} pts</p>
+                  </div>
+                </div>
               ))}
           </div>
 
           {/* Load More */}
-          <button className="mt-6 w-full py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors">
+          <button className="mt-6 w-full py-3 border border-neutral-700 rounded-xl text-neutral-400 font-medium hover:bg-neutral-800 hover:text-neutral-200 transition-colors">
             Load More Activities
           </button>
         </div>
 
         {/* Download Report */}
-        <div className="mt-8 bg-white rounded-2xl shadow-sm p-6 flex flex-col md:flex-row items-center justify-between">
+        <div className="mt-8 bg-neutral-900 border border-neutral-800 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-gray-800">Download Your Impact Report</h3>
-            <p className="text-gray-600 mt-1">Get a detailed PDF report of your environmental contributions</p>
+            <h3 className="text-lg font-semibold text-white">Download Your Impact Report</h3>
+            <p className="text-neutral-400 mt-1">Get a detailed PDF report of your environmental contributions</p>
           </div>
-          <button className="mt-4 md:mt-0 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center space-x-2">
+          <button className="mt-4 md:mt-0 bg-emerald-500 hover:bg-emerald-400 text-black px-6 py-3 rounded-xl font-medium transition-colors flex items-center space-x-2">
             <span>📄</span>
             <span>Download Report</span>
           </button>

@@ -141,38 +141,39 @@ const Leaderboard = () => {
   const getRankBadge = (rank) => {
     switch (rank) {
       case 1:
-        return { icon: '🥇', color: 'bg-yellow-100 text-yellow-700 border-yellow-300' };
+        return { icon: '🥇', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
       case 2:
-        return { icon: '🥈', color: 'bg-gray-100 text-gray-700 border-gray-300' };
+        return { icon: '🥈', color: 'bg-neutral-400/20 text-neutral-300 border-neutral-400/30' };
       case 3:
-        return { icon: '🥉', color: 'bg-amber-100 text-amber-700 border-amber-300' };
+        return { icon: '🥉', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
       default:
-        return { icon: rank, color: 'bg-gray-50 text-gray-600 border-gray-200' };
+        return { icon: rank, color: 'bg-neutral-800 text-neutral-400 border-neutral-700' };
     }
   };
 
   const getChangeIndicator = (change) => {
     if (change > 0) {
-      return <span className="text-green-500 text-sm">↑ {change}</span>;
+      return <span className="text-emerald-400 text-sm">↑ {change}</span>;
     } else if (change < 0) {
-      return <span className="text-red-500 text-sm">↓ {Math.abs(change)}</span>;
+      return <span className="text-red-400 text-sm">↓ {Math.abs(change)}</span>;
     }
-    return <span className="text-gray-400 text-sm">-</span>;
+    return <span className="text-neutral-500 text-sm">-</span>;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-neutral-950 py-8">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Leaderboard</h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-emerald-400 text-sm tracking-widest uppercase mb-2">Rankings</p>
+          <h1 className="text-3xl font-bold text-white">Leaderboard</h1>
+          <p className="text-neutral-400 mt-2">
             Compete with others and climb the ranks! 🏆
           </p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-2xl shadow-sm p-4 mb-8">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             {/* Time Range */}
             <div className="flex space-x-2">
@@ -180,10 +181,10 @@ const Leaderboard = () => {
                 <button
                   key={range}
                   onClick={() => setTimeRange(range)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
                     timeRange === range
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-emerald-500 text-black'
+                      : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200'
                   }`}
                 >
                   {range === 'all-time' ? 'All Time' : range.charAt(0).toUpperCase() + range.slice(1)}
@@ -195,7 +196,7 @@ const Leaderboard = () => {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+              className="px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             >
               <option value="all">All Categories</option>
               <option value="transport">Transportation</option>
@@ -211,22 +212,22 @@ const Leaderboard = () => {
           {/* Second Place */}
           <div className="flex flex-col items-center pt-8">
             <div className="relative">
-              <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center text-4xl border-4 border-gray-300 shadow-lg">
+              <div className="w-20 h-20 bg-neutral-800 rounded-full flex items-center justify-center text-4xl border-4 border-neutral-600 shadow-lg">
                 {leaderboardData[1].avatar}
               </div>
               <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 text-2xl">
                 🥈
               </span>
             </div>
-            <h3 className="mt-4 font-semibold text-gray-800">{leaderboardData[1].name}</h3>
-            <p className="text-green-600 font-bold">{leaderboardData[1].points.toLocaleString()} pts</p>
-            <p className="text-sm text-gray-500">{leaderboardData[1].co2Saved} kg CO₂</p>
+            <h3 className="mt-4 font-semibold text-white">{leaderboardData[1].name}</h3>
+            <p className="text-emerald-400 font-bold">{leaderboardData[1].points.toLocaleString()} pts</p>
+            <p className="text-sm text-neutral-500">{leaderboardData[1].co2Saved} kg CO₂</p>
           </div>
 
           {/* First Place */}
           <div className="flex flex-col items-center">
             <div className="relative">
-              <div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center text-5xl border-4 border-yellow-400 shadow-xl animate-pulse">
+              <div className="w-24 h-24 bg-yellow-500/20 rounded-full flex items-center justify-center text-5xl border-4 border-yellow-500/50 shadow-xl">
                 {leaderboardData[0].avatar}
               </div>
               <span className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-3xl">
@@ -236,29 +237,29 @@ const Leaderboard = () => {
                 🥇
               </span>
             </div>
-            <h3 className="mt-4 font-bold text-lg text-gray-800">{leaderboardData[0].name}</h3>
-            <p className="text-green-600 font-bold text-lg">{leaderboardData[0].points.toLocaleString()} pts</p>
-            <p className="text-sm text-gray-500">{leaderboardData[0].co2Saved} kg CO₂</p>
+            <h3 className="mt-4 font-bold text-lg text-white">{leaderboardData[0].name}</h3>
+            <p className="text-emerald-400 font-bold text-lg">{leaderboardData[0].points.toLocaleString()} pts</p>
+            <p className="text-sm text-neutral-500">{leaderboardData[0].co2Saved} kg CO₂</p>
           </div>
 
           {/* Third Place */}
           <div className="flex flex-col items-center pt-12">
             <div className="relative">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-3xl border-4 border-amber-300 shadow-lg">
+              <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center text-3xl border-4 border-amber-500/50 shadow-lg">
                 {leaderboardData[2].avatar}
               </div>
               <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 text-2xl">
                 🥉
               </span>
             </div>
-            <h3 className="mt-4 font-semibold text-gray-800">{leaderboardData[2].name}</h3>
-            <p className="text-green-600 font-bold">{leaderboardData[2].points.toLocaleString()} pts</p>
-            <p className="text-sm text-gray-500">{leaderboardData[2].co2Saved} kg CO₂</p>
+            <h3 className="mt-4 font-semibold text-white">{leaderboardData[2].name}</h3>
+            <p className="text-emerald-400 font-bold">{leaderboardData[2].points.toLocaleString()} pts</p>
+            <p className="text-sm text-neutral-500">{leaderboardData[2].co2Saved} kg CO₂</p>
           </div>
         </div>
 
         {/* Your Position */}
-        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 mb-8 text-white">
+        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-6 mb-8 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
@@ -266,12 +267,12 @@ const Leaderboard = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Your Position</h3>
-                <p className="text-green-100">Keep going to climb the ranks!</p>
+                <p className="text-emerald-100">Keep going to climb the ranks!</p>
               </div>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold">{currentUserRank.points.toLocaleString()} pts</p>
-              <p className="text-green-100 flex items-center justify-end space-x-1">
+              <p className="text-emerald-100 flex items-center justify-end space-x-1">
                 <span className="text-yellow-300">↑ {currentUserRank.change}</span>
                 <span>positions this week</span>
               </p>
@@ -280,13 +281,13 @@ const Leaderboard = () => {
         </div>
 
         {/* Full Leaderboard */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-xl font-semibold text-gray-800">Full Rankings</h2>
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
+          <div className="p-6 border-b border-neutral-800">
+            <h2 className="text-xl font-semibold text-white">Full Rankings</h2>
           </div>
           
           {/* Table Header */}
-          <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 text-sm font-medium text-gray-500">
+          <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-neutral-800/50 text-sm font-medium text-neutral-500">
             <div className="col-span-1">Rank</div>
             <div className="col-span-4">User</div>
             <div className="col-span-2 text-right">Points</div>
@@ -296,51 +297,51 @@ const Leaderboard = () => {
           </div>
 
           {/* Table Body */}
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-neutral-800">
             {leaderboardData.map((user, index) => {
               const rankBadge = getRankBadge(user.rank);
               return (
                 <div
                   key={user.id}
-                  className={`grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors ${
-                    index < 3 ? 'bg-gradient-to-r from-transparent to-green-50/50' : ''
+                  className={`grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-neutral-800/50 transition-colors ${
+                    index < 3 ? 'bg-gradient-to-r from-transparent to-emerald-500/5' : ''
                   }`}
                 >
                   {/* Rank */}
                   <div className="col-span-1">
-                    <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full border ${rankBadge.color} font-semibold`}>
+                    <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full border ${rankBadge.color} font-semibold text-sm`}>
                       {user.rank <= 3 ? rankBadge.icon : user.rank}
                     </span>
                   </div>
 
                   {/* User */}
                   <div className="col-span-4 flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-xl">
+                    <div className="w-10 h-10 bg-neutral-800 rounded-full flex items-center justify-center text-xl">
                       {user.avatar}
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800">{user.name}</p>
-                      <p className="text-sm text-gray-500">{user.badges} badges</p>
+                      <p className="font-medium text-white">{user.name}</p>
+                      <p className="text-sm text-neutral-500">{user.badges} badges</p>
                     </div>
                   </div>
 
                   {/* Points */}
                   <div className="col-span-2 text-right">
-                    <span className="font-bold text-green-600">{user.points.toLocaleString()}</span>
-                    <span className="text-gray-400 ml-1">pts</span>
+                    <span className="font-bold text-emerald-400">{user.points.toLocaleString()}</span>
+                    <span className="text-neutral-500 ml-1">pts</span>
                   </div>
 
                   {/* CO2 Saved */}
                   <div className="col-span-2 text-right">
-                    <span className="font-medium text-gray-700">{user.co2Saved}</span>
-                    <span className="text-gray-400 ml-1">kg</span>
+                    <span className="font-medium text-neutral-300">{user.co2Saved}</span>
+                    <span className="text-neutral-500 ml-1">kg</span>
                   </div>
 
                   {/* Streak */}
                   <div className="col-span-2 text-right">
                     <span className="inline-flex items-center space-x-1">
                       <span className="text-orange-500">🔥</span>
-                      <span className="font-medium text-gray-700">{user.streak} days</span>
+                      <span className="font-medium text-neutral-300">{user.streak} days</span>
                     </span>
                   </div>
 
@@ -354,8 +355,8 @@ const Leaderboard = () => {
           </div>
 
           {/* Load More */}
-          <div className="p-4 border-t border-gray-100">
-            <button className="w-full py-3 text-green-600 font-medium hover:bg-green-50 rounded-lg transition-colors">
+          <div className="p-4 border-t border-neutral-800">
+            <button className="w-full py-3 text-emerald-400 font-medium hover:bg-neutral-800 rounded-lg transition-colors">
               Load More Rankings
             </button>
           </div>
@@ -363,20 +364,20 @@ const Leaderboard = () => {
 
         {/* Community Stats */}
         <div className="mt-8 grid md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 text-center">
             <span className="text-4xl">👥</span>
-            <h3 className="text-2xl font-bold text-gray-800 mt-2">15,234</h3>
-            <p className="text-gray-600">Active Users</p>
+            <h3 className="text-2xl font-bold text-white mt-2">15,234</h3>
+            <p className="text-neutral-400">Active Users</p>
           </div>
-          <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 text-center">
             <span className="text-4xl">🌍</span>
-            <h3 className="text-2xl font-bold text-gray-800 mt-2">2.5M kg</h3>
-            <p className="text-gray-600">Total CO₂ Saved</p>
+            <h3 className="text-2xl font-bold text-white mt-2">2.5M kg</h3>
+            <p className="text-neutral-400">Total CO₂ Saved</p>
           </div>
-          <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 text-center">
             <span className="text-4xl">📊</span>
-            <h3 className="text-2xl font-bold text-gray-800 mt-2">458K</h3>
-            <p className="text-gray-600">Activities Logged</p>
+            <h3 className="text-2xl font-bold text-white mt-2">458K</h3>
+            <p className="text-neutral-400">Activities Logged</p>
           </div>
         </div>
       </div>

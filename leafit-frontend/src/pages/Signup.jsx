@@ -65,57 +65,64 @@ const Signup = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center py-12 px-4">
-      <div className="max-w-4xl w-full grid md:grid-cols-2 gap-8 items-center">
+    <div className="min-h-screen bg-neutral-950 flex items-center justify-center py-12 px-4 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-emerald-600/10 rounded-full blur-[80px]" />
+        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-emerald-400/5 rounded-full blur-[60px]" />
+      </div>
+
+      <div className="max-w-4xl w-full grid md:grid-cols-2 gap-8 items-center relative z-10">
         {/* Left Side - Benefits */}
         <div className="hidden md:block">
           <Link to="/" className="inline-flex items-center space-x-2 mb-8">
             <span className="text-5xl">🌿</span>
-            <span className="text-3xl font-bold text-green-600">LeafIt</span>
+            <span className="text-3xl font-bold text-emerald-500">LeafIt</span>
           </Link>
           
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">
+          <h2 className="text-3xl font-bold text-white mb-4">
             Join the Green Revolution
           </h2>
-          <p className="text-gray-600 mb-8">
+          <p className="text-neutral-400 mb-8">
             Start tracking your environmental impact today and make every action count.
           </p>
 
           <div className="space-y-4">
             {features.map((feature, index) => (
-              <div key={index} className="flex items-center space-x-3">
+              <div key={index} className="flex items-center space-x-3 p-3 bg-neutral-900/50 border border-neutral-800 rounded-xl">
                 <span className="text-2xl">{feature.icon}</span>
-                <span className="text-gray-700">{feature.text}</span>
+                <span className="text-neutral-300">{feature.text}</span>
               </div>
             ))}
           </div>
 
-          <div className="mt-8 p-4 bg-green-100 rounded-xl">
-            <p className="text-green-800 text-sm">
+          <div className="mt-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+            <p className="text-emerald-400 text-sm">
               <span className="font-semibold">🎉 Join 50,000+ eco-warriors</span> already making a difference!
             </p>
           </div>
         </div>
 
         {/* Right Side - Signup Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-8">
           {/* Mobile Logo */}
           <div className="md:hidden text-center mb-6">
             <Link to="/" className="inline-flex items-center space-x-2">
               <span className="text-4xl">🌿</span>
-              <span className="text-2xl font-bold text-green-600">LeafIt</span>
+              <span className="text-2xl font-bold text-emerald-500">LeafIt</span>
             </Link>
           </div>
 
-          <h2 className="text-2xl font-bold text-gray-800 text-center md:text-left">
+          <h2 className="text-2xl font-bold text-white text-center md:text-left">
             Create Your Account
           </h2>
-          <p className="text-gray-600 mt-1 text-center md:text-left">
+          <p className="text-neutral-400 mt-1 text-center md:text-left">
             Start your sustainability journey today
           </p>
 
           {error && (
-            <div className="mt-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+            <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-sm">
               {error}
             </div>
           )}
@@ -123,14 +130,14 @@ const Signup = () => {
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-neutral-300 mb-2">
                 Full Name
               </label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                 placeholder="John Doe"
                 required
               />
@@ -138,14 +145,14 @@ const Signup = () => {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-neutral-300 mb-2">
                 Email Address
               </label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                 placeholder="you@example.com"
                 required
               />
@@ -153,30 +160,30 @@ const Signup = () => {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-neutral-300 mb-2">
                 Password
               </label>
               <input
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                 placeholder="••••••••"
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters</p>
+              <p className="text-xs text-neutral-500 mt-1">Must be at least 8 characters</p>
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-neutral-300 mb-2">
                 Confirm Password
               </label>
               <input
                 type="password"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                 placeholder="••••••••"
                 required
               />
@@ -188,15 +195,15 @@ const Signup = () => {
                 type="checkbox"
                 checked={formData.agreeToTerms}
                 onChange={(e) => setFormData({ ...formData, agreeToTerms: e.target.checked })}
-                className="w-4 h-4 mt-1 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                className="w-4 h-4 mt-1 bg-neutral-800 border-neutral-600 rounded text-emerald-500 focus:ring-emerald-500"
               />
-              <label className="ml-2 text-sm text-gray-600">
+              <label className="ml-2 text-sm text-neutral-400">
                 I agree to the{' '}
-                <Link to="/terms" className="text-green-600 hover:text-green-700">
+                <Link to="/terms" className="text-emerald-400 hover:text-emerald-300 transition-colors">
                   Terms of Service
                 </Link>{' '}
                 and{' '}
-                <Link to="/privacy" className="text-green-600 hover:text-green-700">
+                <Link to="/privacy" className="text-emerald-400 hover:text-emerald-300 transition-colors">
                   Privacy Policy
                 </Link>
               </label>
@@ -208,8 +215,8 @@ const Signup = () => {
               disabled={isLoading}
               className={`w-full py-3 rounded-xl font-semibold text-lg transition-all ${
                 isLoading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-green-500 hover:bg-green-600 text-white transform hover:scale-[1.02]'
+                  ? 'bg-neutral-700 cursor-not-allowed text-neutral-400'
+                  : 'bg-emerald-500 hover:bg-emerald-400 text-black transform hover:scale-[1.02]'
               }`}
             >
               {isLoading ? (
@@ -227,9 +234,9 @@ const Signup = () => {
           </form>
 
           {/* Sign In Link */}
-          <p className="mt-6 text-center text-gray-600">
+          <p className="mt-6 text-center text-neutral-400">
             Already have an account?{' '}
-            <Link to="/login" className="text-green-600 hover:text-green-700 font-medium">
+            <Link to="/login" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
               Sign in
             </Link>
           </p>

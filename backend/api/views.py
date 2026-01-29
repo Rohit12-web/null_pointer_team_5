@@ -39,7 +39,7 @@ def chat_with_ai(request):
                 "temperature": 0.3,
                 "max_tokens": 256,
                 "messages": [
-                    {"role": "system", "content": "You are EnvoX AI, a sustainability expert for a hackathon at Chitkara University."},
+                    {"role": "system", "content": "You are LeafIt AI, a sustainability expert for a hackathon at Chitkara University."},
                     {"role": "user", "content": user_message},
                 ],
             }

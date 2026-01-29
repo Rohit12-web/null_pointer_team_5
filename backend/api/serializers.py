@@ -7,6 +7,7 @@ import uuid
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.utils import timezone
+import pytz
 
 
 class GreenActionSerializer(serializers.ModelSerializer):
@@ -156,8 +157,9 @@ class UserActivityCreateSerializer(serializers.Serializer):
         # Handle activity_date - convert date to datetime if provided
         activity_date = validated_data.get('activity_date')
         if activity_date:
-            # Convert date to datetime at noon
-            activity_datetime = timezone.make_aware(
+            # Convert date to datetime at noon in UTC to preserve the date
+            utc = pytz.UTC
+            activity_datetime = utc.localize(
                 datetime.combine(activity_date, datetime.min.time().replace(hour=12))
             )
         else:

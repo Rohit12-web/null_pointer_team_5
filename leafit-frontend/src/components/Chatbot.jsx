@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import chatService from '../services/chatService';
+import { Sprout } from 'lucide-react';
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Hi! I'm LeafIt AI 🌱 Your sustainability assistant. Ask me anything about green living, eco-friendly tips, or how to reduce your carbon footprint!",
+      text: "Hi! I'm LeafIt AI, your sustainability assistant. Ask me anything about green living, eco-friendly tips, or how to reduce your carbon footprint!",
       sender: 'bot',
       timestamp: new Date(),
     },
@@ -115,7 +116,7 @@ const Chatbot = () => {
           {/* Header */}
           <div className="flex-shrink-0 bg-gradient-to-r from-green-600 to-green-500 px-4 py-4 flex items-center space-x-3">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-              <span className="text-xl">🌱</span>
+              <Sprout className="w-5 h-5 text-green-600" />
             </div>
             <div className="flex-1">
               <h3 className="text-white font-semibold">LeafIt AI</h3>

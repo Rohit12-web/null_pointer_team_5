@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import activityService from '../services/activityService';
 
 const Dashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
@@ -12,6 +13,23 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [stats, setStats] = useState({
+    totalPoints: 0,
+    co2Saved: 0,
+    streak: 0,
+    rank: '-',
+    activitiesThisWeek: 0,
+    treesEquivalent: 0,
+  });
+  const [weeklyData, setWeeklyData] = useState([
+    { day: 'Mon', value: 0, activities: 0 },
+    { day: 'Tue', value: 0, activities: 0 },
+    { day: 'Wed', value: 0, activities: 0 },
+    { day: 'Thu', value: 0, activities: 0 },
+    { day: 'Fri', value: 0, activities: 0 },
+    { day: 'Sat', value: 0, activities: 0 },
+    { day: 'Sun', value: 0, activities: 0 },
+  ]);
 
   // Eco slideshow data
   const ecoSlides = [
@@ -41,32 +59,6 @@ const Dashboard = () => {
     }
   ];
 
-  // Mock data
-  const stats = {
-    totalPoints: 2450,
-    co2Saved: 156.8,
-    streak: 7,
-    rank: 42,
-    activitiesThisWeek: 12,
-  };
-
-  const mockActivities = [
-    { id: 1, type: 'transport', icon: '🚌', description: 'Took the bus to work', points: 25, time: '2 hours ago' },
-    { id: 2, type: 'energy', icon: '💡', description: 'Used LED lights all day', points: 15, time: 'Yesterday' },
-    { id: 3, type: 'recycling', icon: '♻️', description: 'Recycled plastic bottles', points: 20, time: '2 days ago' },
-    { id: 4, type: 'water', icon: '💧', description: 'Shorter shower', points: 10, time: '3 days ago' },
-  ];
-
-  const weeklyData = [
-    { day: 'Mon', value: 35, activities: 3 },
-    { day: 'Tue', value: 42, activities: 4 },
-    { day: 'Wed', value: 28, activities: 2 },
-    { day: 'Thu', value: 55, activities: 5 },
-    { day: 'Fri', value: 48, activities: 4 },
-    { day: 'Sat', value: 62, activities: 6 },
-    { day: 'Sun', value: 38, activities: 3 },
-  ];
-
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/log-activity', label: 'Log Activity', icon: '➕' },
@@ -76,12 +68,15 @@ const Dashboard = () => {
     { path: '/profile', label: 'Profile', icon: '👤' },
   ];
 
-  useEffect(() => {
-    setTimeout(() => {
-      setActivities(mockActivities);
-      setLoading(false);
-    }, 300);
-  }, []);
+  // Activity type icons mapping
+  const activityIcons = {
+    transport: '🚌',
+    electricity: '💡',
+    recycling: '♻️',
+    water: '💧',
+    food: '🥗',
+    other: '🌳',
+  };
 
   // Auto-advance slideshow
   useEffect(() => {
@@ -100,7 +95,140 @@ const Dashboard = () => {
     setCurrentSlide((prev) => (prev - 1 + ecoSlides.length) % ecoSlides.length);
   };
 
-  const maxValue = Math.max(...weeklyData.map(d => d.value));
+  // Format time ago
+  const formatTimeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString();
+  };
+
+  // Fetch dashboard data
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      // Fetch activities
+      const activitiesResponse = await activityService.getActivities();
+      const fetchedActivities = activitiesResponse.activities || [];
+      
+      // Format activities for display
+      const formattedActivities = fetchedActivities.slice(0, 5).map(activity => ({
+        id: activity.id,
+        type: activity.activity_type,
+        icon: activityIcons[activity.activity_type] || '🌱',
+        description: activity.activity_name,
+        points: activity.points_earned,
+        time: formatTimeAgo(activity.created_at),
+        co2_saved: activity.co2_saved,
+      }));
+      setActivities(formattedActivities);
+      
+      // Calculate stats from user data (from auth context) and activities
+      if (user) {
+        setStats({
+          totalPoints: user.total_points || 0,
+          co2Saved: parseFloat(user.total_co2_saved || 0).toFixed(2),
+          streak: user.current_streak || 0,
+          rank: '-', // Will be fetched from leaderboard
+          activitiesThisWeek: fetchedActivities.filter(a => {
+            const activityDate = new Date(a.created_at);
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return activityDate > weekAgo;
+          }).length,
+          treesEquivalent: ((user.total_co2_saved || 0) / 21.77).toFixed(2),
+        });
+      }
+      
+      // Calculate weekly data from activities
+      const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const today = new Date();
+      const weekData = [];
+      
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dayName = weekDays[date.getDay()];
+        
+        const dayActivities = fetchedActivities.filter(a => {
+          const activityDate = new Date(a.created_at);
+          return activityDate.toDateString() === date.toDateString();
+        });
+        
+        const totalPoints = dayActivities.reduce((sum, a) => sum + (a.points_earned || 0), 0);
+        
+        weekData.push({
+          day: dayName,
+          value: totalPoints,
+          activities: dayActivities.length,
+        });
+      }
+      setWeeklyData(weekData);
+      
+      // Try to fetch rank from leaderboard
+      try {
+        const leaderboardResponse = await activityService.getLeaderboard('total_points', 100);
+        const leaderboard = leaderboardResponse.leaderboard || [];
+        const userRank = leaderboard.findIndex(u => u.id === user?.id);
+        if (userRank !== -1) {
+          setStats(prev => ({ ...prev, rank: userRank + 1 }));
+        }
+      } catch (err) {
+        console.log('Could not fetch leaderboard');
+      }
+      
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+    
+    // Listen for activity logged events from LogActivity page
+    const handleActivityLogged = (event) => {
+      console.log('Activity logged, refreshing dashboard...', event.detail);
+      // Immediately update stats from the event if available
+      if (event.detail?.user_stats) {
+        const newStats = event.detail.user_stats;
+        setStats(prev => ({
+          ...prev,
+          totalPoints: newStats.total_points || prev.totalPoints,
+          co2Saved: parseFloat(newStats.total_co2_saved || prev.co2Saved).toFixed(2),
+          streak: newStats.current_streak || prev.streak,
+          activitiesThisWeek: prev.activitiesThisWeek + 1,
+        }));
+      }
+      // Also fetch fresh data from server
+      fetchDashboardData();
+    };
+    
+    window.addEventListener('activityLogged', handleActivityLogged);
+    
+    // Also refresh when window gains focus (user comes back to tab)
+    const handleFocus = () => {
+      fetchDashboardData();
+    };
+    window.addEventListener('focus', handleFocus);
+    
+    // Cleanup listeners
+    return () => {
+      window.removeEventListener('activityLogged', handleActivityLogged);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [user]);
+
+  const maxValue = Math.max(...weeklyData.map(d => d.value), 1);
 
   // Theme-aware colors
   const colors = {
@@ -147,7 +275,7 @@ const Dashboard = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className={`text-sm font-medium ${colors.text.primary} truncate`}>{user?.name || 'User'}</p>
-              <p className={`text-xs ${colors.text.secondary}`}>Level 8 • {stats.totalPoints} pts</p>
+              <p className={`text-xs ${colors.text.secondary}`}>🌱 {stats.totalPoints} pts</p>
             </div>
           </div>
         </div>
@@ -542,6 +670,12 @@ const Dashboard = () => {
                         </div>
                       </div>
                     ))
+                  ) : activities.length === 0 ? (
+                    <div className={`text-center py-6 ${colors.text.secondary}`}>
+                      <p className="text-3xl mb-2">🌱</p>
+                      <p className="text-sm">No activities yet</p>
+                      <Link to="/log-activity" className="text-emerald-500 text-xs hover:underline">Log your first activity</Link>
+                    </div>
                   ) : (
                     activities.map((activity) => (
                       <div key={activity.id} className={`flex items-center gap-3 p-2 rounded-lg ${isDark ? 'hover:bg-[#162019]' : 'hover:bg-emerald-50'} transition-colors`}>
@@ -550,7 +684,7 @@ const Dashboard = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className={`text-sm ${colors.text.primary} truncate`}>{activity.description}</p>
-                          <p className={`text-xs ${colors.text.secondary}`}>{activity.time}</p>
+                          <p className={`text-xs ${colors.text.secondary}`}>{activity.time} • {activity.co2_saved?.toFixed(2)} kg CO₂</p>
                         </div>
                         <span className="text-xs text-emerald-500 font-medium">+{activity.points}</span>
                       </div>
@@ -565,13 +699,17 @@ const Dashboard = () => {
                 <div className="mb-3">
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-emerald-100">Progress</span>
-                    <span className="text-white font-medium">3/5</span>
+                    <span className="text-white font-medium">{Math.min(stats.activitiesThisWeek, 5)}/5</span>
                   </div>
                   <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-white rounded-full" style={{ width: '60%' }}></div>
+                    <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: `${Math.min((stats.activitiesThisWeek / 5) * 100, 100)}%` }}></div>
                   </div>
                 </div>
-                <p className="text-xs text-emerald-100">2 more activities to reach your goal</p>
+                <p className="text-xs text-emerald-100">
+                  {stats.activitiesThisWeek >= 5 
+                    ? '🎉 Goal reached! Keep going!' 
+                    : `${5 - Math.min(stats.activitiesThisWeek, 5)} more activities to reach your goal`}
+                </p>
               </div>
 
               {/* Achievements with Visual Showcase */}

@@ -20,6 +20,8 @@ const Dashboard = () => {
     rank: '-',
     activitiesThisWeek: 0,
     treesEquivalent: 0,
+    waterSaved: 0,
+    wasteReduced: 0,
   });
   const [weeklyData, setWeeklyData] = useState([
     { day: 'Mon', value: 0, activities: 0 },
@@ -128,8 +130,21 @@ const Dashboard = () => {
         points: activity.points_earned,
         time: formatTimeAgo(activity.created_at),
         co2_saved: activity.co2_saved,
+        water_saved: activity.water_saved || 0,
+        activity_type: activity.activity_type,
       }));
       setActivities(formattedActivities);
+      
+      // Calculate water saved and waste reduced from activities
+      let totalWaterSaved = 0;
+      let totalWasteReduced = 0;
+      fetchedActivities.forEach(activity => {
+        totalWaterSaved += activity.water_saved || 0;
+        // Estimate waste based on recycling activities (each recycling saves ~2kg waste)
+        if (activity.activity_type === 'recycling') {
+          totalWasteReduced += (activity.co2_saved || 0) * 0.5;
+        }
+      });
       
       // Calculate stats from user data (from auth context) and activities
       if (user) {
@@ -139,16 +154,19 @@ const Dashboard = () => {
           streak: user.current_streak || 0,
           rank: '-', // Will be fetched from leaderboard
           activitiesThisWeek: fetchedActivities.filter(a => {
-            const activityDate = new Date(a.created_at);
+            // Use activity_date for when the activity actually happened
+            const activityDate = new Date(a.activity_date || a.created_at);
             const weekAgo = new Date();
             weekAgo.setDate(weekAgo.getDate() - 7);
             return activityDate > weekAgo;
           }).length,
           treesEquivalent: ((user.total_co2_saved || 0) / 21.77).toFixed(2),
+          waterSaved: totalWaterSaved,
+          wasteReduced: totalWasteReduced,
         });
       }
       
-      // Calculate weekly data from activities
+      // Calculate weekly data from activities - use activity_date for the actual date
       const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       const today = new Date();
       const weekData = [];
@@ -159,7 +177,8 @@ const Dashboard = () => {
         const dayName = weekDays[date.getDay()];
         
         const dayActivities = fetchedActivities.filter(a => {
-          const activityDate = new Date(a.created_at);
+          // Use activity_date (when the activity happened) instead of created_at
+          const activityDate = new Date(a.activity_date || a.created_at);
           return activityDate.toDateString() === date.toDateString();
         });
         
@@ -207,7 +226,20 @@ const Dashboard = () => {
           co2Saved: parseFloat(newStats.total_co2_saved || prev.co2Saved).toFixed(2),
           streak: newStats.current_streak || prev.streak,
           activitiesThisWeek: prev.activitiesThisWeek + 1,
+          treesEquivalent: ((newStats.total_co2_saved || prev.co2Saved) / 21.77).toFixed(2),
         }));
+        
+        // Update water and waste if activity details are available
+        if (event.detail?.activity) {
+          const activity = event.detail.activity;
+          setStats(prev => ({
+            ...prev,
+            waterSaved: prev.waterSaved + (activity.water_saved || 0),
+            wasteReduced: activity.activity_type === 'recycling' 
+              ? prev.wasteReduced + (activity.co2_saved || 0) * 0.5 
+              : prev.wasteReduced,
+          }));
+        }
       }
       // Also fetch fresh data from server
       fetchDashboardData();
@@ -539,8 +571,8 @@ const Dashboard = () => {
                   <p className={`text-sm ${colors.text.secondary}`}>Conservation effort</p>
                 </div>
               </div>
-              <p className="text-4xl font-bold text-cyan-600">1,250L</p>
-              <p className={`text-sm ${colors.text.secondary} mt-2`}>Enough to fill 8 bathtubs!</p>
+              <p className="text-4xl font-bold text-cyan-600">{stats.waterSaved > 0 ? stats.waterSaved.toLocaleString() : '0'}L</p>
+              <p className={`text-sm ${colors.text.secondary} mt-2`}>{stats.waterSaved > 0 ? `Enough to fill ${Math.max(1, Math.floor(stats.waterSaved / 150))} bathtubs!` : 'Start saving water!'}</p>
             </div>
 
             <div className={`bg-gradient-to-br ${isDark ? 'from-green-900/50 to-teal-900/50' : 'from-green-50 to-teal-50'} border-2 ${isDark ? 'border-green-700' : 'border-green-300'} rounded-xl p-6 hover:shadow-lg transition-all`}>
@@ -553,8 +585,8 @@ const Dashboard = () => {
                   <p className={`text-sm ${colors.text.secondary}`}>Recycling impact</p>
                 </div>
               </div>
-              <p className="text-4xl font-bold text-green-600">45.2kg</p>
-              <p className={`text-sm ${colors.text.secondary} mt-2`}>Diverted from landfills</p>
+              <p className="text-4xl font-bold text-green-600">{stats.wasteReduced > 0 ? stats.wasteReduced.toFixed(1) : '0'}kg</p>
+              <p className={`text-sm ${colors.text.secondary} mt-2`}>{stats.wasteReduced > 0 ? 'Diverted from landfills' : 'Start recycling!'}</p>
             </div>
           </div>
 
@@ -604,7 +636,7 @@ const Dashboard = () => {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Left Column - Charts */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Weekly Chart - Pie Chart */}
+              {/* Weekly Chart - Heatmap Style */}
               <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-6 ${isDark ? '' : 'shadow-sm'}`}>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className={`text-base font-semibold ${colors.text.primary}`}>Weekly Overview</h2>
@@ -614,34 +646,87 @@ const Dashboard = () => {
                   </select>
                 </div>
 
-                <div className="flex flex-col items-center">
-                  {/* Simple Bar Chart */}
-                  <div className="w-full mb-6">
-                    <div className="flex items-end justify-between h-32 gap-2">
-                      {weeklyData.map((day, i) => (
-                        <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                          <div className={`text-xs ${colors.text.secondary} mb-1`}>{day.activities}</div>
-                          <div
-                            className="w-full bg-gradient-to-t from-emerald-500 to-teal-500 rounded-md hover:from-emerald-400 hover:to-teal-400 transition-all cursor-pointer shadow-lg shadow-emerald-900/20"
-                            style={{ height: `${(day.value / Math.max(...weeklyData.map(d => d.value))) * 100}%`, minHeight: '8px' }}
-                          />
-                          <span className={`text-xs ${colors.text.secondary}`}>{day.day}</span>
-                        </div>
-                      ))}
-                    </div>
+                {/* Heatmap Grid */}
+                <div className="space-y-4">
+                  {/* Time slots header */}
+                  <div className="grid grid-cols-8 gap-2">
+                    <div className={`text-xs ${colors.text.secondary}`}></div>
+                    <div className={`text-xs ${colors.text.secondary} text-center`}>Morning</div>
+                    <div className={`text-xs ${colors.text.secondary} text-center`}>Noon</div>
+                    <div className={`text-xs ${colors.text.secondary} text-center`}>Afternoon</div>
+                    <div className={`text-xs ${colors.text.secondary} text-center`}>Evening</div>
+                    <div className={`text-xs ${colors.text.secondary} text-center`}>Night</div>
+                    <div className={`text-xs ${colors.text.secondary} text-center`}>Total</div>
+                    <div className={`text-xs ${colors.text.secondary} text-center`}>Points</div>
                   </div>
-
-                  {/* Legend */}
-                  <div className="grid grid-cols-2 gap-4 w-full">
-                    {weeklyData.map((day, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 shadow-sm" />
-                        <div className="flex-1">
-                          <span className={`text-sm font-medium ${colors.text.primary}`}>{day.day}</span>
-                          <span className={`text-xs ${colors.text.secondary} block`}>{day.activities} activities</span>
+                  
+                  {/* Heatmap rows */}
+                  {weeklyData.map((day, index) => {
+                    const maxValue = Math.max(...weeklyData.map(d => d.value), 1);
+                    const intensity = day.value / maxValue;
+                    // Generate random-ish time distribution for demo (in real app, would come from actual data)
+                    const getHeatIntensity = (slot) => {
+                      if (day.activities === 0) return 0;
+                      const rand = ((index + slot + 1) * 17) % 10 / 10;
+                      return rand * intensity;
+                    };
+                    
+                    return (
+                      <div key={index} className="grid grid-cols-8 gap-2 items-center">
+                        <div className={`text-xs font-medium ${colors.text.primary}`}>{day.day}</div>
+                        {[0, 1, 2, 3, 4].map((slot) => {
+                          const heat = getHeatIntensity(slot);
+                          return (
+                            <div
+                              key={slot}
+                              className={`h-8 rounded-md transition-all cursor-pointer hover:scale-105 ${
+                                heat === 0 
+                                  ? isDark ? 'bg-[#162019]' : 'bg-gray-100'
+                                  : ''
+                              }`}
+                              style={heat > 0 ? {
+                                background: `linear-gradient(135deg, rgba(16, 185, 129, ${0.2 + heat * 0.8}) 0%, rgba(20, 184, 166, ${0.2 + heat * 0.8}) 100%)`,
+                                boxShadow: heat > 0.5 ? `0 0 10px rgba(16, 185, 129, ${heat * 0.3})` : 'none'
+                              } : {}}
+                              title={`${day.day}: ${Math.round(heat * day.activities)} activities`}
+                            />
+                          );
+                        })}
+                        <div className={`text-center`}>
+                          <span className={`text-sm font-bold ${day.activities > 0 ? 'text-emerald-500' : colors.text.secondary}`}>
+                            {day.activities}
+                          </span>
+                        </div>
+                        <div className={`text-center`}>
+                          <span className={`text-sm font-bold ${day.value > 0 ? 'text-teal-500' : colors.text.secondary}`}>
+                            {day.value}
+                          </span>
                         </div>
                       </div>
-                    ))}
+                    );
+                  })}
+                  
+                  {/* Legend */}
+                  <div className="flex items-center justify-between pt-4 border-t border-dashed mt-4" style={{ borderColor: isDark ? '#1f4030' : '#d1fae5' }}>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs ${colors.text.secondary}`}>Less</span>
+                      <div className="flex gap-1">
+                        {[0.1, 0.3, 0.5, 0.7, 0.9].map((level) => (
+                          <div
+                            key={level}
+                            className="w-4 h-4 rounded"
+                            style={{
+                              background: `linear-gradient(135deg, rgba(16, 185, 129, ${level}) 0%, rgba(20, 184, 166, ${level}) 100%)`
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <span className={`text-xs ${colors.text.secondary}`}>More</span>
+                    </div>
+                    <div className={`text-xs ${colors.text.secondary}`}>
+                      Total: <span className="text-emerald-500 font-bold">{weeklyData.reduce((sum, d) => sum + d.activities, 0)}</span> activities • 
+                      <span className="text-teal-500 font-bold ml-1">{weeklyData.reduce((sum, d) => sum + d.value, 0)}</span> pts
+                    </div>
                   </div>
                 </div>
               </div>

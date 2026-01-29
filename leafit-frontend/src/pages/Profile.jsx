@@ -408,19 +408,73 @@ const Profile = () => {
           )}
 
           {activeTab === 'badges' && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {badges.map((badge) => (
-                <div key={badge.id} className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-4 text-center transition-all duration-300 ${!badge.earned ? 'opacity-50 grayscale' : 'hover:scale-105 hover:shadow-lg hover:shadow-emerald-500/20'} ${isDark ? '' : 'shadow-sm'}`}>
-                  <div className={`text-4xl mb-2 ${badge.earned ? '' : 'filter blur-[1px]'}`}>{badge.icon}</div>
-                  <h3 className={`font-medium ${colors.text.primary}`}>{badge.name}</h3>
-                  <p className={`text-xs ${colors.text.secondary} mt-1`}>{badge.description}</p>
-                  {badge.earned ? (
-                    <span className="inline-block mt-2 text-xs text-emerald-500 font-medium">✓ Earned</span>
-                  ) : (
-                    <span className="inline-block mt-2 text-xs text-gray-500">🔒 Locked</span>
-                  )}
+            <div className="space-y-8">
+              {/* Store Badges Section */}
+              <div className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-6 ${isDark ? '' : 'shadow-sm'}`}>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className={`text-lg font-semibold ${colors.text.primary}`}>🏅 Redeemable Badges</h3>
+                    <p className={`text-sm ${colors.text.secondary}`}>Every 100kg CO₂ saved = 1 Badge</p>
+                  </div>
+                  <Link to="/badge-store" className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-sm font-medium hover:from-emerald-400 hover:to-teal-400 transition-all shadow-lg shadow-emerald-900/20">
+                    Visit Store →
+                  </Link>
                 </div>
-              ))}
+                
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className={`p-4 rounded-xl ${isDark ? 'bg-[#162019]' : 'bg-emerald-50'} text-center`}>
+                    <p className={`text-3xl font-bold ${colors.text.primary}`}>{Math.floor(profileData.co2Saved / 100)}</p>
+                    <p className={`text-xs ${colors.text.secondary}`}>Total Earned</p>
+                  </div>
+                  <div className={`p-4 rounded-xl ${isDark ? 'bg-[#162019]' : 'bg-amber-50'} text-center`}>
+                    <p className={`text-3xl font-bold ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+                      {JSON.parse(localStorage.getItem(`redeemed_${user?.id}`) || '[]').reduce((sum, c) => sum + c.badgeCost, 0)}
+                    </p>
+                    <p className={`text-xs ${colors.text.secondary}`}>Used</p>
+                  </div>
+                  <div className={`p-4 rounded-xl ${isDark ? 'bg-[#162019]' : 'bg-teal-50'} text-center`}>
+                    <p className={`text-3xl font-bold text-emerald-500`}>
+                      {Math.max(0, Math.floor(profileData.co2Saved / 100) - JSON.parse(localStorage.getItem(`redeemed_${user?.id}`) || '[]').reduce((sum, c) => sum + c.badgeCost, 0))}
+                    </p>
+                    <p className={`text-xs ${colors.text.secondary}`}>Available</p>
+                  </div>
+                </div>
+                
+                {/* Progress to next badge */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-sm ${colors.text.secondary}`}>Progress to next badge</span>
+                    <span className={`text-sm font-medium ${colors.text.primary}`}>
+                      {(profileData.co2Saved % 100).toFixed(1)} / 100 kg CO₂
+                    </span>
+                  </div>
+                  <div className={`h-3 ${isDark ? 'bg-[#162019]' : 'bg-gray-200'} rounded-full overflow-hidden`}>
+                    <div 
+                      className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
+                      style={{ width: `${((profileData.co2Saved % 100) / 100) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Achievement Badges Section */}
+              <div>
+                <h3 className={`text-lg font-semibold ${colors.text.primary} mb-4`}>🏆 Achievement Badges</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {badges.map((badge) => (
+                    <div key={badge.id} className={`bg-gradient-to-b ${colors.bg.cardGradient} border ${colors.border} rounded-xl p-4 text-center transition-all duration-300 ${!badge.earned ? 'opacity-50 grayscale' : 'hover:scale-105 hover:shadow-lg hover:shadow-emerald-500/20'} ${isDark ? '' : 'shadow-sm'}`}>
+                      <div className={`text-4xl mb-2 ${badge.earned ? '' : 'filter blur-[1px]'}`}>{badge.icon}</div>
+                      <h3 className={`font-medium ${colors.text.primary}`}>{badge.name}</h3>
+                      <p className={`text-xs ${colors.text.secondary} mt-1`}>{badge.description}</p>
+                      {badge.earned ? (
+                        <span className="inline-block mt-2 text-xs text-emerald-500 font-medium">✓ Earned</span>
+                      ) : (
+                        <span className="inline-block mt-2 text-xs text-gray-500">🔒 Locked</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

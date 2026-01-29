@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import activityService from '../services/activityService';
 
 const BadgeStore = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
@@ -12,7 +13,19 @@ const BadgeStore = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedBadge, setSelectedBadge] = useState(null);
   const [showRedeemModal, setShowRedeemModal] = useState(false);
-  const [userBadges, setUserBadges] = useState(5); // User's available badges for exchange
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [redeemedCoupon, setRedeemedCoupon] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [userStats, setUserStats] = useState({
+    totalCO2Saved: 0,
+    totalBadges: 0,
+    usedBadges: 0,
+    availableBadges: 0,
+  });
+  const [redeemedCoupons, setRedeemedCoupons] = useState([]);
+
+  // Calculate badges: 100kg CO2 saved = 1 badge
+  const CO2_PER_BADGE = 100;
 
   // Brand advertisement slides
   const brandSlides = [
@@ -42,7 +55,7 @@ const BadgeStore = () => {
       brand: 'SolarTech',
       image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=300&fit=crop&q=80',
       tagline: 'Power Your Home with Sunshine',
-      discount: '₹8000 Credit',
+      discount: '₹5000 Credit',
     },
     {
       id: 5,
@@ -60,55 +73,60 @@ const BadgeStore = () => {
       brand: 'EcoMart',
       title: '20% Off Your Next Purchase',
       description: 'Valid on all eco-friendly products',
-      badgeCost: 2,
-      originalValue: '₹1200',
+      badgeCost: 1,
+      originalValue: '₹500',
       expiresIn: '30 days',
       category: 'Shopping',
-      color: 'from-[#44a08d] to-[#093637]',
+      color: 'from-emerald-500 to-teal-600',
+      code: 'ECOMART20',
     },
     {
       id: 2,
       brand: 'GreenRide',
-      title: 'Free 1-Week Bike Rental',
+      title: 'Free 3-Day Bike Rental',
       description: 'Explore the city sustainably',
-      badgeCost: 3,
-      originalValue: '₹4000',
+      badgeCost: 2,
+      originalValue: '₹1500',
       expiresIn: '60 days',
       category: 'Transport',
-      color: 'from-[#44a08d] to-[#093637]',
+      color: 'from-blue-500 to-cyan-600',
+      code: 'GREENRIDE3D',
     },
     {
       id: 3,
       brand: 'OrganicBite',
       title: '15% Off Meal Plan',
       description: 'First month of organic meal delivery',
-      badgeCost: 2,
-      originalValue: '₹1600',
+      badgeCost: 1,
+      originalValue: '₹800',
       expiresIn: '14 days',
       category: 'Food',
-      color: 'from-[#44a08d] to-[#093637]',
+      color: 'from-orange-500 to-amber-600',
+      code: 'ORGANIC15',
     },
     {
       id: 4,
       brand: 'SolarTech',
-      title: '₹8000 Installation Credit',
+      title: '₹5000 Installation Credit',
       description: 'Towards solar panel installation',
-      badgeCost: 5,
-      originalValue: '₹8000',
+      badgeCost: 3,
+      originalValue: '₹5000',
       expiresIn: '90 days',
       category: 'Energy',
-      color: 'from-[#44a08d] to-[#093637]',
+      color: 'from-yellow-500 to-orange-600',
+      code: 'SOLAR5000',
     },
     {
       id: 5,
       brand: 'EcoFashion',
       title: '25% Off Sustainable Clothing',
       description: 'On any item from the eco collection',
-      badgeCost: 2,
-      originalValue: '₹2000',
+      badgeCost: 1,
+      originalValue: '₹1000',
       expiresIn: '45 days',
       category: 'Fashion',
-      color: 'from-[#44a08d] to-[#093637]',
+      color: 'from-pink-500 to-rose-600',
+      code: 'ECOFASH25',
     },
     {
       id: 6,
@@ -116,32 +134,35 @@ const BadgeStore = () => {
       title: 'Free Plant Starter Kit',
       description: 'Includes seeds, soil, and pot',
       badgeCost: 1,
-      originalValue: '₹1200',
+      originalValue: '₹600',
       expiresIn: '30 days',
       category: 'Garden',
-      color: 'from-[#44a08d] to-[#093637]',
+      color: 'from-green-500 to-emerald-600',
+      code: 'PLANTFREE',
     },
     {
       id: 7,
       brand: 'WaterSave',
       title: 'Smart Water Meter Discount',
       description: '30% off smart water monitoring',
-      badgeCost: 3,
-      originalValue: '₹3600',
+      badgeCost: 2,
+      originalValue: '₹2000',
       expiresIn: '60 days',
       category: 'Home',
-      color: 'from-[#44a08d] to-[#093637]',
+      color: 'from-cyan-500 to-blue-600',
+      code: 'WATER30',
     },
     {
       id: 8,
       brand: 'RecycleHub',
       title: 'Premium Recycling Bins Set',
       description: 'Color-coded sorting bins',
-      badgeCost: 2,
-      originalValue: '₹2400',
+      badgeCost: 1,
+      originalValue: '₹1200',
       expiresIn: '45 days',
       category: 'Home',
-      color: 'from-[#44a08d] to-[#093637]',
+      color: 'from-teal-500 to-green-600',
+      code: 'RECYCLE100',
     },
   ];
 
@@ -153,6 +174,50 @@ const BadgeStore = () => {
     { path: '/badge-store', label: 'Badge Store', icon: '🏪' },
     { path: '/profile', label: 'Profile', icon: '👤' },
   ];
+
+  // Fetch user stats and calculate badges
+  const fetchUserData = useCallback(async () => {
+    try {
+      const statsRes = await activityService.getUserStats().catch(() => ({ stats: {} }));
+      const stats = statsRes.stats || {};
+      
+      const totalCO2 = stats.total_co2_saved || user?.total_co2_saved || 0;
+      const totalBadges = Math.floor(totalCO2 / CO2_PER_BADGE);
+      
+      // Get used badges from localStorage (simulating backend storage)
+      const storedRedeemed = JSON.parse(localStorage.getItem(`redeemed_${user?.id}`) || '[]');
+      const usedBadges = storedRedeemed.reduce((sum, c) => sum + c.badgeCost, 0);
+      
+      setUserStats({
+        totalCO2Saved: totalCO2,
+        totalBadges: totalBadges,
+        usedBadges: usedBadges,
+        availableBadges: Math.max(0, totalBadges - usedBadges),
+      });
+      
+      setRedeemedCoupons(storedRedeemed);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Initial data fetch
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
+  // Listen for activity logged events (real-time updates)
+  useEffect(() => {
+    const handleActivityLogged = () => {
+      fetchUserData();
+      if (refreshUser) refreshUser();
+    };
+
+    window.addEventListener('activityLogged', handleActivityLogged);
+    return () => window.removeEventListener('activityLogged', handleActivityLogged);
+  }, [fetchUserData, refreshUser]);
 
   // Auto-advance slideshow
   useEffect(() => {
@@ -171,19 +236,48 @@ const BadgeStore = () => {
   };
 
   const handleRedeem = (coupon) => {
-    if (userBadges >= coupon.badgeCost) {
+    if (userStats.availableBadges >= coupon.badgeCost) {
       setSelectedBadge(coupon);
       setShowRedeemModal(true);
     }
   };
 
   const confirmRedeem = () => {
-    if (selectedBadge && userBadges >= selectedBadge.badgeCost) {
-      setUserBadges(prev => prev - selectedBadge.badgeCost);
+    if (selectedBadge && userStats.availableBadges >= selectedBadge.badgeCost) {
+      // Save redeemed coupon with timestamp and unique code
+      const redeemedCoupon = {
+        ...selectedBadge,
+        redeemedAt: new Date().toISOString(),
+        uniqueCode: `${selectedBadge.code}-${Date.now().toString(36).toUpperCase()}`,
+        expiryDate: new Date(Date.now() + parseInt(selectedBadge.expiresIn) * 24 * 60 * 60 * 1000).toISOString(),
+      };
+      
+      const updatedRedeemed = [...redeemedCoupons, redeemedCoupon];
+      setRedeemedCoupons(updatedRedeemed);
+      localStorage.setItem(`redeemed_${user?.id}`, JSON.stringify(updatedRedeemed));
+      
+      // Update available badges
+      setUserStats(prev => ({
+        ...prev,
+        usedBadges: prev.usedBadges + selectedBadge.badgeCost,
+        availableBadges: prev.availableBadges - selectedBadge.badgeCost,
+      }));
+      
+      setRedeemedCoupon(redeemedCoupon);
       setShowRedeemModal(false);
+      setShowSuccessModal(true);
       setSelectedBadge(null);
-      // Show success message or notification
     }
+  };
+
+  // Check if coupon already redeemed
+  const isCouponRedeemed = (couponId) => {
+    return redeemedCoupons.some(c => c.id === couponId);
+  };
+
+  // Get redeemed coupon data
+  const getRedeemedCoupon = (couponId) => {
+    return redeemedCoupons.find(c => c.id === couponId);
   };
 
   // Theme-aware colors
@@ -200,6 +294,17 @@ const BadgeStore = () => {
     },
     border: isDark ? 'border-emerald-900/50' : 'border-emerald-200',
   };
+
+  if (loading) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-[#1a1f1c]' : 'bg-[#f5faf7]'}`}>
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className={colors.text.secondary}>Loading Badge Store...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen flex ${isDark ? 'bg-[#1a1f1c]' : 'bg-[#f5faf7]'}`}>
@@ -234,11 +339,21 @@ const BadgeStore = () => {
           
           {/* Badge Balance */}
           <div className={`mt-4 p-3 rounded-lg ${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border}`}>
-            <div className="flex items-center justify-between">
-              <span className={`text-xs ${colors.text.secondary}`}>Your Badges</span>
+            <div className="flex items-center justify-between mb-2">
+              <span className={`text-xs ${colors.text.secondary}`}>Available Badges</span>
               <div className="flex items-center gap-1">
                 <span className="text-lg">🏅</span>
-                <span className={`text-lg font-bold ${colors.text.primary}`}>{userBadges}</span>
+                <span className={`text-lg font-bold ${colors.text.primary}`}>{userStats.availableBadges}</span>
+              </div>
+            </div>
+            <div className={`text-xs ${colors.text.muted} border-t ${colors.border} pt-2 mt-2`}>
+              <div className="flex justify-between">
+                <span>Total Earned:</span>
+                <span className={colors.text.secondary}>{userStats.totalBadges}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Used:</span>
+                <span className={colors.text.secondary}>{userStats.usedBadges}</span>
               </div>
             </div>
           </div>
@@ -332,7 +447,11 @@ const BadgeStore = () => {
           <div className="flex items-center gap-3">
             <div className={`flex items-center gap-2 px-4 py-2 ${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border} rounded-lg`}>
               <span className="text-lg">🏅</span>
-              <span className={`font-semibold ${colors.text.primary}`}>{userBadges} Badges</span>
+              <span className={`font-semibold ${colors.text.primary}`}>{userStats.availableBadges} Badges</span>
+            </div>
+            <div className={`hidden sm:flex items-center gap-2 px-4 py-2 ${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border} rounded-lg`}>
+              <span className="text-lg">🌿</span>
+              <span className={`font-semibold ${colors.text.primary}`}>{userStats.totalCO2Saved.toFixed(1)} kg CO₂</span>
             </div>
           </div>
         </header>
@@ -410,50 +529,111 @@ const BadgeStore = () => {
           {/* How It Works */}
           <section className={`p-6 rounded-xl ${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border}`}>
             <h2 className={`text-xl font-semibold ${colors.text.primary} mb-4`}>How Badge Exchange Works</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-xl font-bold shrink-0">1</div>
                 <div>
-                  <h3 className={`font-semibold ${colors.text.primary}`}>Earn Badges</h3>
-                  <p className={`text-sm ${colors.text.secondary}`}>Complete eco-friendly activities to earn badges and rewards</p>
+                  <h3 className={`font-semibold ${colors.text.primary}`}>Save CO₂</h3>
+                  <p className={`text-sm ${colors.text.secondary}`}>Log eco-friendly activities to save carbon</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-xl font-bold shrink-0">2</div>
                 <div>
-                  <h3 className={`font-semibold ${colors.text.primary}`}>Choose Coupon</h3>
-                  <p className={`text-sm ${colors.text.secondary}`}>Browse exclusive coupons from our partner brands</p>
+                  <h3 className={`font-semibold ${colors.text.primary}`}>Earn Badges</h3>
+                  <p className={`text-sm ${colors.text.secondary}`}>Every <strong>100 kg CO₂</strong> saved = <strong>1 Badge</strong></p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-xl font-bold shrink-0">3</div>
                 <div>
+                  <h3 className={`font-semibold ${colors.text.primary}`}>Choose Coupon</h3>
+                  <p className={`text-sm ${colors.text.secondary}`}>Browse exclusive coupons from partners</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-xl font-bold shrink-0">4</div>
+                <div>
                   <h3 className={`font-semibold ${colors.text.primary}`}>Redeem & Save</h3>
-                  <p className={`text-sm ${colors.text.secondary}`}>Exchange badges for coupons and enjoy your savings</p>
+                  <p className={`text-sm ${colors.text.secondary}`}>Exchange badges for real savings</p>
                 </div>
               </div>
             </div>
+            
+            {/* Progress to next badge */}
+            <div className={`mt-6 p-4 rounded-lg ${isDark ? 'bg-[#162019]' : 'bg-[#f5faf7]'} border ${colors.border}`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className={`text-sm ${colors.text.secondary}`}>Progress to next badge</span>
+                <span className={`text-sm font-medium ${colors.text.primary}`}>
+                  {(userStats.totalCO2Saved % CO2_PER_BADGE).toFixed(1)} / {CO2_PER_BADGE} kg CO₂
+                </span>
+              </div>
+              <div className={`h-3 ${isDark ? 'bg-gray-700' : 'bg-gray-200'} rounded-full overflow-hidden`}>
+                <div 
+                  className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
+                  style={{ width: `${((userStats.totalCO2Saved % CO2_PER_BADGE) / CO2_PER_BADGE) * 100}%` }}
+                ></div>
+              </div>
+            </div>
           </section>
+
+          {/* Redeemed Coupons Section */}
+          {redeemedCoupons.length > 0 && (
+            <section>
+              <h2 className={`text-xl font-semibold ${colors.text.primary} mb-4`}>Your Redeemed Coupons</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {redeemedCoupons.map((coupon, index) => (
+                  <div 
+                    key={`${coupon.id}-${index}`}
+                    className={`rounded-xl overflow-hidden ${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border-2 border-emerald-500`}
+                  >
+                    <div className={`bg-gradient-to-r ${coupon.color} p-3`}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-white font-bold">{coupon.brand}</span>
+                        <span className="bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded text-white text-xs">✓ Redeemed</span>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className={`font-semibold ${colors.text.primary} text-sm mb-2`}>{coupon.title}</h3>
+                      <div className={`p-3 rounded-lg ${isDark ? 'bg-[#162019]' : 'bg-emerald-50'} border ${colors.border}`}>
+                        <p className={`text-xs ${colors.text.muted} mb-1`}>Your Coupon Code:</p>
+                        <p className={`font-mono font-bold ${colors.text.primary} text-lg`}>{coupon.uniqueCode}</p>
+                      </div>
+                      <p className={`text-xs ${colors.text.muted} mt-2`}>
+                        Expires: {new Date(coupon.expiryDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Available Coupons */}
           <section>
             <div className="flex items-center justify-between mb-6">
               <h2 className={`text-xl font-semibold ${colors.text.primary}`}>Available Coupons</h2>
               <div className={`text-sm ${colors.text.secondary}`}>
-                You have <span className={`font-semibold ${colors.text.primary}`}>{userBadges} badges</span> to spend
+                You have <span className={`font-semibold ${colors.text.primary}`}>{userStats.availableBadges} badges</span> to spend
               </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {coupons.map((coupon) => {
-                const canAfford = userBadges >= coupon.badgeCost;
+                const canAfford = userStats.availableBadges >= coupon.badgeCost;
+                const isRedeemed = isCouponRedeemed(coupon.id);
                 return (
                   <div 
                     key={coupon.id}
-                    className={`rounded-xl overflow-hidden ${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border} transition-all hover:shadow-xl hover:scale-[1.02] ${!canAfford ? 'opacity-60' : ''}`}
+                    className={`rounded-xl overflow-hidden ${isDark ? 'bg-[#1f2d24]' : 'bg-white'} border ${colors.border} transition-all hover:shadow-xl hover:scale-[1.02] ${!canAfford || isRedeemed ? 'opacity-60' : ''}`}
                   >
                     {/* Coupon Header */}
-                    <div className={`bg-gradient-to-r ${coupon.color} p-4`}>
+                    <div className={`bg-gradient-to-r ${coupon.color} p-4 relative`}>
+                      {isRedeemed && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="bg-white text-emerald-600 px-3 py-1 rounded-full text-sm font-bold">✓ REDEEMED</span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between">
                         <span className="text-white font-bold text-lg">{coupon.brand}</span>
                         <div className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-white text-xs font-medium">
@@ -481,19 +661,22 @@ const BadgeStore = () => {
                       {/* Cost & Redeem */}
                       <div className={`flex items-center justify-between p-3 rounded-lg ${isDark ? 'bg-[#162019]' : 'bg-[#f5faf7]'}`}>
                         <div className="flex items-center gap-2">
+                          <span className="text-lg">🏅</span>
                           <span className={`font-bold ${colors.text.primary}`}>{coupon.badgeCost}</span>
-                          <span className={`text-sm ${colors.text.secondary}`}>badges</span>
+                          <span className={`text-sm ${colors.text.secondary}`}>badge{coupon.badgeCost > 1 ? 's' : ''}</span>
                         </div>
                         <button
                           onClick={() => handleRedeem(coupon)}
-                          disabled={!canAfford}
+                          disabled={!canAfford || isRedeemed}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                            canAfford 
-                              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-lg shadow-emerald-900/30' 
-                              : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                            isRedeemed
+                              ? 'bg-emerald-600 text-white cursor-not-allowed'
+                              : canAfford 
+                                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-lg shadow-emerald-900/30' 
+                                : 'bg-gray-400 text-gray-200 cursor-not-allowed'
                           }`}
                         >
-                          {canAfford ? 'Redeem' : 'Not Enough'}
+                          {isRedeemed ? 'Claimed' : canAfford ? 'Redeem' : 'Need More'}
                         </button>
                       </div>
                     </div>
@@ -540,6 +723,13 @@ const BadgeStore = () => {
               <p className={`text-sm ${colors.text.muted} mt-2`}>Value: {selectedBadge.originalValue}</p>
             </div>
             
+            <div className={`flex items-center justify-between p-3 rounded-lg ${isDark ? 'bg-amber-900/20' : 'bg-amber-50'} border border-amber-500/30 mb-6`}>
+              <span className={`text-sm ${isDark ? 'text-amber-200' : 'text-amber-700'}`}>After redemption:</span>
+              <span className={`font-bold ${isDark ? 'text-amber-200' : 'text-amber-700'}`}>
+                {userStats.availableBadges - selectedBadge.badgeCost} badges remaining
+              </span>
+            </div>
+            
             <div className="flex gap-3">
               <button
                 onClick={() => setShowRedeemModal(false)}
@@ -554,6 +744,50 @@ const BadgeStore = () => {
                 Confirm Redeem
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && redeemedCoupon && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className={`w-full max-w-md rounded-2xl ${isDark ? 'bg-[#1f2d24]' : 'bg-white'} p-6 shadow-2xl`}>
+            <div className="text-center mb-6">
+              <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-4xl mb-4 animate-bounce">
+                🎉
+              </div>
+              <h3 className={`text-xl font-bold ${colors.text.primary}`}>Congratulations!</h3>
+              <p className={`text-sm ${colors.text.secondary} mt-2`}>
+                You've successfully redeemed your coupon!
+              </p>
+            </div>
+            
+            <div className={`p-4 rounded-lg ${isDark ? 'bg-[#162019]' : 'bg-emerald-50'} border-2 border-emerald-500 mb-6`}>
+              <p className={`text-xs ${colors.text.muted} mb-2 text-center`}>Your Unique Coupon Code</p>
+              <p className={`font-mono font-bold text-2xl text-center ${colors.text.primary}`}>
+                {redeemedCoupon.uniqueCode}
+              </p>
+              <div className="mt-3 pt-3 border-t border-emerald-500/30">
+                <p className={`text-sm ${colors.text.secondary} text-center`}>{redeemedCoupon.title}</p>
+                <p className={`text-xs ${colors.text.muted} text-center mt-1`}>
+                  Valid until: {new Date(redeemedCoupon.expiryDate).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+            
+            <p className={`text-xs ${colors.text.muted} text-center mb-4`}>
+              📧 This code has been saved to your redeemed coupons. Use it at checkout!
+            </p>
+            
+            <button
+              onClick={() => {
+                setShowSuccessModal(false);
+                setRedeemedCoupon(null);
+              }}
+              className="w-full px-4 py-3 rounded-lg font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-400 hover:to-teal-400 transition-all shadow-lg shadow-emerald-900/30"
+            >
+              Awesome! 🌟
+            </button>
           </div>
         </div>
       )}

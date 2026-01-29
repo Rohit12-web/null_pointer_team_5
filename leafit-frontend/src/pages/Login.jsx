@@ -195,7 +195,7 @@ const Login = () => {
           <div className="w-2 h-2 bg-white/50 rounded-full" />
         </div>
       </div>
-    </div>
+      </div>
     </div>
   );
 };

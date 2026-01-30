@@ -2,9 +2,8 @@ services:
   - type: web
     name: leafit-backend
     runtime: python
-    rootDir: backend
-    buildCommand: pip install -r ../requirements.txt && python manage.py collectstatic --noinput
-    startCommand: gunicorn config.wsgi:application
+    buildCommand: pip install -r requirements.txt && cd backend && python manage.py collectstatic --noinput
+    startCommand: cd backend && gunicorn config.wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.0

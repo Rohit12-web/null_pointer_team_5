@@ -44,21 +44,21 @@ class UserBadgeAdmin(admin.ModelAdmin):
 
 @admin.register(GreenAction)
 class GreenActionAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'points', 'co2_saved', 'is_active')
+    list_display = ('title', 'category', 'points_per_unit', 'co2_per_unit', 'is_active')
     list_filter = ('category', 'is_active')
     search_fields = ('title', 'description')
 
 
 @admin.register(UserActivity)
 class UserActivityAdmin(admin.ModelAdmin):
-    list_display = ('user', 'action', 'quantity', 'points_earned', 'co2_saved', 'activity_date')
-    list_filter = ('action__category', 'activity_date')
-    search_fields = ('user__email', 'action__title', 'notes')
+    list_display = ('user', 'activity_name', 'quantity', 'points_earned', 'co2_saved', 'activity_date')
+    list_filter = ('activity_type', 'activity_date')
+    search_fields = ('user__email', 'activity_name', 'notes')
     date_hierarchy = 'activity_date'
 
 
 @admin.register(RefreshToken)
 class RefreshTokenAdmin(admin.ModelAdmin):
-    list_display = ('user', 'token', 'created_at', 'expires_at', 'is_valid')
-    list_filter = ('is_valid', 'created_at')
+    list_display = ('user', 'token', 'created_at', 'expires_at', 'is_revoked')
+    list_filter = ('is_revoked', 'created_at')
     search_fields = ('user__email', 'token')

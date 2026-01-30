@@ -27,7 +27,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-o^1u%u*@_4ast@0+=rfgx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = [
+    "backend-m7a3.onrender.com",  # your render URL
+    ".onrender.com",
+]
 
 
 # Application definition
